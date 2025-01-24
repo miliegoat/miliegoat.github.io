@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VHS Retro Style</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: black;
+      color: white;
+      font-family: 'Arial', sans-serif;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .enter-button {
+      text-align: center;
+    }
+
+    .enter-button button {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      font-size: 2rem;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 10px;
+      padding: 10px 20px;
+      cursor: pointer;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .enter-button button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      border-color: white;
+      transform: scale(1.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="enter-button">
+    <button onclick="window.location.href='index2.html'">Enter Site</button>
+  </div>
+</body>
+</html>
