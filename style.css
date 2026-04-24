@@ -263,12 +263,13 @@
       padding: 2px 0 10px;
     }
    .badges-row {
-     display: flex;
-     flex-wrap: wrap;
-     gap: 4px;
-     align-items: flex-end;
-     justify-content: center;
-    }
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
    .badges-row img {
      image-rendering: pixelated;
      height: 31px;
