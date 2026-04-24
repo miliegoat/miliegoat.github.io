@@ -262,24 +262,14 @@
       font-style: italic;
       padding: 2px 0 10px;
     }
-/* badges */
-/* badges */
-/* badges */
-/* badges */
-/* badges */
-/* badges */
-/* badges */
-/* badges */
-/* badges */
-/* badges */
-
-   .badges-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  width: fit-content;
-  margin-left: auto;
-}
+    .badges-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+    }
    .badges-row img {
      image-rendering: pixelated;
      height: 31px;
