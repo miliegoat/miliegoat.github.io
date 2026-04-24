@@ -262,7 +262,17 @@
       font-style: italic;
       padding: 2px 0 10px;
     }
-
+   .badges-row {
+      display: flex;
+     flex-wrap: wrap;
+     gap: 4px;
+     align-items: flex-end;
+    }
+   .badges-row img {
+     image-rendering: pixelated;
+     height: 31px;
+     border: 1px solid #2a2a2a;
+    }
     /* footer */
     .footer {
       text-align: center;
