@@ -9,12 +9,12 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  
+
 <div class="parallax-bg" id="parallaxBg">
   <div class="layer layer-1" id="layer1"></div>
   <div class="layer layer-2" id="layer2"></div>
 </div>
-  
+
 <canvas id="snow"></canvas>
 
 <div class="card">
@@ -132,6 +132,15 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
   const audio = document.getElementById('audio');
   let playing = false;
 
+  function initSlider() {
+    const slider = document.getElementById('volSlider');
+    slider.style.background = `linear-gradient(to right, #e07830 100%, #2a2a2a 100%)`;
+    if (audio.duration) {
+      document.getElementById('durationEl').textContent = fmt(audio.duration);
+    }
+  }
+  initSlider();
+
   function togglePlay() {
     if (playing) {
       audio.pause();
@@ -156,6 +165,9 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
 
   audio.addEventListener('loadedmetadata', () => {
     document.getElementById('durationEl').textContent = fmt(audio.duration);
+    const slider = document.getElementById('volSlider');
+    const pct = slider.value * 100;
+    slider.style.background = `linear-gradient(to right, #e07830 ${pct}%, #2a2a2a ${pct}%)`;
   });
 
   audio.addEventListener('ended', () => {
@@ -261,5 +273,6 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
   }
   animateParallax();
 </script>
+
 </body>
 </html>
