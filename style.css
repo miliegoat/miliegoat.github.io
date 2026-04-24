@@ -16,7 +16,7 @@
       border-radius: 20px;
       padding: 24px;
       width: 100%;
-      max-width: 460px;
+      max-width: 430px;
       position: relative;
       z-index: 1;
     }
@@ -263,10 +263,11 @@
       padding: 2px 0 10px;
     }
    .badges-row {
-      display: flex;
+     display: flex;
      flex-wrap: wrap;
      gap: 4px;
      align-items: flex-end;
+     justify-content: center;
     }
    .badges-row img {
      image-rendering: pixelated;
