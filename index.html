@@ -66,7 +66,9 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
 
   <div class="player">
     <div class="player-top">
-      <div class="album-art" id="albumArt">🎵</div>
+      <div class="album-art" id="albumArt">
+        <img src="cover.jpg" style="width:40px;height:40px;border-radius:6px;object-fit:cover">
+      </div>
       <div class="track-info">
         <div class="track-name">
           <span id="trackName">Oh Qué Será? - Willie Colón</span>
@@ -86,7 +88,7 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
     <div class="progress-row">
       <span id="currentTime">0:00</span>
       <div class="progress-bar" onclick="seek(event)">
-        <div class="progress-fill" id="progresFill"></div>
+        <div class="progress-fill" id="progressFill"></div>
       </div>
       <span id="durationEl">0:00</span>
     </div>
@@ -131,19 +133,13 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
   made with html
 </div>
 
-<audio id="audio"></audio>
+<audio id="audio" src="ohquesera.mp3"></audio>
 
 <script>
-  const audio = document.getElementById('audio');
-  audio.src = 'ohquesera.mp3';                  // path or URL to audio file
-  document.getElementById('trackName').textContent = 'Oh Qué Será? - Willie Colón';
-  document.getElementById('albumArt').innerHTML = '<img src="cover.jpg">';
-
   const audio = document.getElementById('audio');
   let playing = false;
 
   function togglePlay() {
-    if (!audio.src || audio.src === window.location.href) return;
     if (playing) {
       audio.pause();
       document.getElementById('playIcon').innerHTML = '<path d="M8 5v14l11-7z"/>';
