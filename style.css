@@ -263,12 +263,11 @@
       padding: 2px 0 10px;
     }
    .badges-row {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 4px;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
+  width: fit-content;
+  margin-left: auto;
 }
    .badges-row img {
      image-rendering: pixelated;
