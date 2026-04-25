@@ -342,6 +342,7 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
+      position: relative;
       z-index: 1;
     }
     .footer svg { color: #e07830; }
