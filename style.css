@@ -21,7 +21,6 @@
       z-index: 1;
     }
 
-    /* views badge */
     .views {
       position: absolute;
       top: 20px;
@@ -38,7 +37,6 @@
     }
     .views svg { color: #e07830; }
 
-    /* name */
     .name {
       font-size: 28px;
       font-weight: 700;
@@ -53,7 +51,6 @@
       text-underline-offset: 4px;
     }
 
-    /* bio */
     .bio {
       font-size: 14px;
       color: #999;
@@ -62,7 +59,6 @@
       white-space: pre-line;
     }
 
-    /* location */
     .location {
       display: flex;
       align-items: center;
@@ -73,14 +69,12 @@
     }
     .location svg { color: #e07830; flex-shrink: 0; }
 
-    /* divider */
     hr {
       border: none;
       border-top: 1px solid #232323;
       margin-bottom: 16px;
     }
 
-    /* profile / identity row */
     .profile-row {
       background: #1c1c1c;
       border: 1px solid #272727;
@@ -144,7 +138,6 @@
       white-space: nowrap;
     }
 
-    /* music player */
     .player {
       background: #1c1c1c;
       border: 1px solid #272727;
@@ -227,7 +220,6 @@
       transition: width 0.4s linear;
     }
 
-    /* interests / music tastes */
     .section-label {
       font-size: 11px;
       text-transform: uppercase;
@@ -285,7 +277,6 @@
       z-index: 0;
     }
 
-    /* ── parallax bg layers ── */
     .parallax-bg {
       position: fixed;
       top: 0; left: 0;
@@ -337,12 +328,10 @@
       cursor: pointer;
     }
 
-    /* dynamic vol slider fill */
     .vol-slider {
       background: linear-gradient(to right, #e07830 0%, #2a2a2a 0%);
     }
 
-    /* footer */
     .footer {
       text-align: center;
       margin-top: 20px;
