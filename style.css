@@ -452,32 +452,33 @@ a.activity-name:hover { color: #e07830; }
 }
 
 .lyrics-btn {
-  background: #252525;
+  background: linear-gradient(135deg, #252525 0%, #1f1f1f 100%);
   border: 1px solid #333;
   border-radius: 999px;
-  color: #666;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
+  color: #777;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 3px 8px;
+  padding: 6px 12px;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 4px;
-  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   font-family: inherit;
 }
 
 .lyrics-btn:hover {
   color: #e07830;
-  border-color: rgba(224,120,48,0.4);
+  border-color: rgba(224,120,48,0.5);
+  background: linear-gradient(135deg, rgba(224,120,48,0.15) 0%, rgba(224,120,48,0.05) 100%);
 }
 
 .lyrics-btn.active {
   color: #e07830;
-  border-color: rgba(224,120,48,0.4);
-  background: rgba(224,120,48,0.08);
+  border-color: rgba(224,120,48,0.6);
+  background: linear-gradient(135deg, rgba(224,120,48,0.2) 0%, rgba(224,120,48,0.1) 100%);
 }
 
     /* Outer wrapper: full width, scrollable if needed on very small screens */
@@ -514,14 +515,20 @@ a.activity-name:hover { color: #e07830; }
     .lyrics-side-panel {
       width: 476px;
       height: 520px;
-      background: #161616;
+      background: linear-gradient(135deg, #161616 0%, #1a1a1a 100%);
       border: 1px solid #252525;
-      border-radius: 20px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      border-radius: 24px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 1px rgba(224, 120, 48, 0.1);
       display: flex;
       flex-direction: column;
       overflow: hidden;
       flex-shrink: 0;
+      transition: all 0.3s ease;
+    }
+    
+    .lyrics-side-panel:hover {
+      border-color: #2a2a2a;
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5), 0 0 20px rgba(224, 120, 48, 0.08);
     }
 
     /* Stack below when viewport too narrow for side-by-side */
@@ -548,15 +555,15 @@ a.activity-name:hover { color: #e07830; }
     }
 
     .lw-titlebar {
-      background: #1e1e1e;
+      background: linear-gradient(135deg, #1e1e1e 0%, #1a1a1a 100%);
       border-bottom: 1px solid #252525;
-      padding: 10px 14px;
+      padding: 12px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       user-select: none;
       flex-shrink: 0;
-      border-radius: 20px 20px 0 0;
+      border-radius: 24px 24px 0 0;
     }
 
     .lw-title-info {
@@ -577,24 +584,32 @@ a.activity-name:hover { color: #e07830; }
 
     .lw-controls { display: flex; gap: 6px; flex-shrink: 0; }
     .lw-btn {
-      background: #2a2a2a;
+      background: linear-gradient(135deg, #2a2a2a 0%, #252525 100%);
       border: 1px solid #333;
-      border-radius: 6px;
-      color: #666;
+      border-radius: 8px;
+      color: #777;
       font-size: 11px;
-      width: 22px;
-      height: 22px;
+      width: 28px;
+      height: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: color 0.15s, background 0.15s;
+      transition: all 0.3s ease;
       font-family: inherit;
       padding: 0;
       line-height: 1;
     }
-    .lw-btn:hover { background: #333; color: #ccc; }
-    .lw-btn.lw-close:hover { background: rgba(248,113,113,0.15); color: #f87171; border-color: rgba(248,113,113,0.3); }
+    .lw-btn:hover { 
+      background: linear-gradient(135deg, #333 0%, #2a2a2a 100%);
+      color: #ccc;
+      border-color: #444;
+    }
+    .lw-btn.lw-close:hover { 
+      background: linear-gradient(135deg, rgba(248,113,113,0.2) 0%, rgba(248,113,113,0.1) 100%);
+      color: #f87171;
+      border-color: rgba(248,113,113,0.4);
+    }
 
     .lw-body {
       flex: 1;
@@ -607,26 +622,40 @@ a.activity-name:hover { color: #e07830; }
       flex: 1;
       overflow-y: auto;
       overflow-x: hidden;
-      padding: 20px 20px 40px;
+      padding: 24px 24px 48px;
       scrollbar-width: thin;
       scrollbar-color: #2a2a2a transparent;
       scroll-behavior: smooth;
     }
-    .lw-lyrics::-webkit-scrollbar { width: 4px; }
-    .lw-lyrics::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
+    .lw-lyrics::-webkit-scrollbar { width: 5px; }
+    .lw-lyrics::-webkit-scrollbar-thumb { 
+      background: #2a2a2a;
+      border-radius: 3px;
+      transition: all 0.2s ease;
+    }
+    .lw-lyrics::-webkit-scrollbar-thumb:hover { 
+      background: #3a3a3a;
+    }
 
     .lw-lyric-line {
-      font-size: 14px;
-      color: #333;
-      line-height: 1.9;
+      font-size: 15px;
+      color: #444;
+      line-height: 2;
       transition: color 0.3s, font-size 0.2s;
       cursor: default;
+      font-weight: 400;
     }
-    .lw-lyric-line.lw-lyric-past { color: #4a4a4a; }
+    .lw-lyric-line.lw-lyric-past { 
+      color: #555;
+    }
     .lw-lyric-line.lw-lyric-active {
       color: #fff;
       font-weight: 700;
-      font-size: 15px;
+      font-size: 16px;
+      background: linear-gradient(135deg, rgba(224,120,48,0.15) 0%, transparent 100%);
+      padding: 4px 8px;
+      border-radius: 8px;
+      margin: -4px -8px;
     }
 
 .lyrics-loading {
