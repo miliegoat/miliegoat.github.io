@@ -1,4 +1,4 @@
-    *, *::before, *::after {
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -474,23 +474,135 @@ a.activity-name:hover { color: #e07830; }
   background: rgba(224,120,48,0.08);
 }
 
-.lyrics-panel {
-  background: #1c1c1c;
-  border: 1px solid #272727;
-  border-radius: 14px;
-  padding: 4px 0;
-  margin-bottom: 12px;
-  max-height: 220px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #2e2e2e transparent;
-}
+    .lyrics-layout {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      width: 100%;
+      justify-content: center;
+    }
 
-.lyrics-panel::-webkit-scrollbar { width: 4px; }
-.lyrics-panel::-webkit-scrollbar-track { background: transparent; }
-.lyrics-panel::-webkit-scrollbar-thumb { background: #2e2e2e; border-radius: 2px; }
+    .lyrics-panel {
+      background: #1c1c1c;
+      border: 1px solid #272727;
+      border-radius: 14px;
+      padding: 0;
+      margin-bottom: 12px;
+      height: 117px;
+      overflow: hidden;
+      position: relative;
+    }
 
-.lyrics-content { padding: 10px 16px; }
+    .lyrics-panel::-webkit-scrollbar { display: none; }
+
+    #lyricsContent {
+      transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      padding: 46px 16px; 
+      will-change: transform;
+    }
+
+    #lyricsWindow {
+      position: fixed;
+      z-index: 9999;
+      width: 500px;          
+      height: 520px;         
+      background: #161616;
+      border: 1px solid #2a2a2a;
+      border-radius: 14px;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      resize: both;
+      min-width: 300px;     
+      min-height: 200px;
+    }
+
+    .lw-titlebar {
+      background: #1e1e1e;
+      border-bottom: 1px solid #252525;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: grab;
+      user-select: none;
+      flex-shrink: 0;
+      border-radius: 14px 14px 0 0;
+    }
+    .lw-titlebar:active { cursor: grabbing; }
+
+    .lw-title-info {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #ccc;
+      min-width: 0;
+    }
+    .lw-title-info span {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 200px;
+    }
+
+    .lw-controls { display: flex; gap: 6px; flex-shrink: 0; }
+    .lw-btn {
+      background: #2a2a2a;
+      border: 1px solid #333;
+      border-radius: 6px;
+      color: #666;
+      font-size: 11px;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: color 0.15s, background 0.15s;
+      font-family: inherit;
+      padding: 0;
+      line-height: 1;
+    }
+    .lw-btn:hover { background: #333; color: #ccc; }
+    .lw-btn.lw-close:hover { background: rgba(248,113,113,0.15); color: #f87171; border-color: rgba(248,113,113,0.3); }
+
+    .lw-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .lw-lyrics {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 20px 20px 40px;
+      scrollbar-width: thin;
+      scrollbar-color: #2a2a2a transparent;
+      scroll-behavior: smooth;
+    }
+    .lw-lyrics::-webkit-scrollbar { width: 4px; }
+    .lw-lyrics::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
+
+    .lw-lyric-line {
+      font-size: 14px;
+      color: #333;
+      line-height: 1.9;
+      transition: color 0.3s, font-size 0.2s;
+      cursor: default;
+    }
+    .lw-lyric-line.lw-lyric-past { color: #4a4a4a; }
+    .lw-lyric-line.lw-lyric-active {
+      color: #fff;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .lyrics-content { padding: 10px 16px; }
 
 .lyrics-loading {
   font-size: 12px;
@@ -520,4 +632,37 @@ a.activity-name:hover { color: #e07830; }
   font-size: 13px;
   color: #666;
   line-height: 1.8;
+}
+@keyframes lw-pop-out {
+  0% {
+    opacity: 0;
+    transform: scale(0.85) translateY(20px);
+    transform-origin: center bottom;
+  }
+  60% {
+    transform: scale(1.03) translateY(-4px);
+    transform-origin: center bottom;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    transform-origin: center bottom;
+  }
+}
+
+@keyframes lw-pop-in {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    transform-origin: center bottom;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.85) translateY(20px);
+    transform-origin: center bottom;
+  }
+}
+
+#lyricsWindow {
+  animation: lw-pop-out 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
