@@ -15,6 +15,24 @@
   }
 })();
 /* babyboo */
+/* babyboo */
+/* babyboo */
+/* babyboo */
+/* babyboo */
+/* babyboo */
+/* babyboo */
+/* babyboo */
+/* babyboo */
+/* babyboo */
+/* babyboo */
+/* babyboo */
+/* babyboo */
+/* babyboo */
+/* babyboo */
+/* babyboo */
+/* babyboo */
+/* babyboo */
+/* i fucking hate caching bro kill yourself */
 
   const DISCORD_ID = '1125787079654260777';
   const STATUS_COLORS = { online: '#4ade80', idle: '#facc15', dnd: '#f87171', offline: '#6b7280' };
