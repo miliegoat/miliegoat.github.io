@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>mil</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="favicon.ico" />
 </head>
 <body>
 
@@ -23,11 +23,7 @@
     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
       <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5a5 5 0 110-10 5 5 0 010 10zm0-8a3 3 0 100 6 3 3 0 000-6z"/>
     </svg>
-    <img
-      src="https://hits.sh/milproject.xyz.svg?style=flat&label=&color=e07830&labelColor=1f1f1f"
-      alt="views"
-      style="height:16px;filter:brightness(1.1)"
-    />
+    <span id="viewCount">1</span>
   </div>
 
   <div class="name">m<span>ilie</span></div>
@@ -54,8 +50,10 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
     <div class="badge">🪨 coal</div>
   </div>
 
-  <div id="discordActivities"></div>
+  <!-- game activities go here -->
+  <div id="gameActivities"></div>
 
+  <!-- local music player (hidden when spotify active) -->
   <div class="player" id="localPlayer">
     <div class="player-top">
       <div class="album-art" id="albumArt">
@@ -91,6 +89,16 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
         <div class="progress-fill" id="progressFill"></div>
       </div>
       <span id="durationEl">0:00</span>
+    </div>
+  </div>
+
+  <!-- spotify card goes here (after games, replaces local player) -->
+  <div id="spotifyActivity"></div>
+
+  <!-- lyrics panel -->
+  <div id="lyricsPanel" class="lyrics-panel" style="display:none;">
+    <div id="lyricsContent" class="lyrics-content">
+      <div class="lyrics-loading">loading lyrics...</div>
     </div>
   </div>
 
@@ -130,19 +138,32 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
   </span>
 </div>
 
-<audio id="audio" src="ohquesera.mp3"></audio>
+<audio id="audio" src="ohquesera.mp3" preload="metadata"></audio>
 
 <script>
+  // Initialize view counter
+  (function() {
+    const viewKey = 'milsite_views';
+    let views = parseInt(localStorage.getItem(viewKey) || '0', 10);
+    views++;
+    localStorage.setItem(viewKey, views);
+    document.getElementById('viewCount').textContent = views;
+  })();
+
   const DISCORD_ID = '1125787079654260777';
   const STATUS_COLORS = { online: '#4ade80', idle: '#facc15', dnd: '#f87171', offline: '#6b7280' };
   const STATUS_LABELS = { online: 'online', idle: 'idle', dnd: 'do not disturb', offline: 'offline' };
 
   let spotifyProgressInterval = null;
+  let lyricsInterval = null;
+  let currentLyrics = [];
+  let lyricsOpen = false;
+  let currentTrackId = null;
+  let currentSpotifyData = null;
 
   function fmtMs(ms) {
     const s = Math.floor(ms / 1000);
-    const m = Math.floor(s / 60);
-    return m + ':' + String(s % 60).padStart(2, '0');
+    return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
   }
 
   function updateProfile(data) {
@@ -160,7 +181,12 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
 
     document.getElementById('discordProfile').innerHTML = `
       <div class="avatar-wrap">
-        <img src="${avatarUrl}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+        <img 
+          src="${avatarUrl}" 
+          style="width:52px;height:52px;border-radius:50%;object-fit:cover;display:block;" 
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+          loading="lazy"
+        />
         <div class="avatar-placeholder" style="display:none;">🐹</div>
         <div class="status-dot" style="background:${statusColor};" title="${statusLabel}"></div>
       </div>
@@ -172,25 +198,58 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
       <div class="badge">🪨 coal</div>
     `;
 
-    const activitiesEl = document.getElementById('discordActivities');
-    const localPlayer = document.getElementById('localPlayer');
-    const cards = [];
-
     clearInterval(spotifyProgressInterval);
+
+    const games = activities.filter(a => a.type === 0);
+    const gameEl = document.getElementById('gameActivities');
+    gameEl.innerHTML = games.map(game => {
+      const largeImage = game.assets?.large_image;
+      const iconUrl = largeImage && game.application_id && !largeImage.startsWith('mp:')
+        ? `https://cdn.discordapp.com/app-assets/${game.application_id}/${largeImage}.png?size=64`
+        : null;
+      return `
+        <div class="discord-activity">
+          <div class="activity-inner">
+            ${iconUrl
+              ? `<img src="${iconUrl}" class="activity-art" loading="lazy" onerror="this.outerHTML='<div class=&quot;activity-art-placeholder&quot;>🎮</div>'"/>`
+              : `<div class="activity-art-placeholder">🎮</div>`}
+            <div class="activity-info">
+              <div class="activity-type">playing</div>
+              <div class="activity-name">${game.name}</div>
+              ${game.details ? `<div class="activity-sub">${game.details}</div>` : ''}
+              ${game.state ? `<div class="activity-sub">${game.state}</div>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    const localPlayer = document.getElementById('localPlayer');
+    const spotifyEl = document.getElementById('spotifyActivity');
 
     if (listening_to_spotify && spotify) {
       localPlayer.style.display = 'none';
       const trackUrl = `https://open.spotify.com/track/${spotify.track_id}`;
       const duration = spotify.timestamps ? spotify.timestamps.end - spotify.timestamps.start : 0;
 
-      cards.push(`
+      const trackChanged = spotify.track_id !== currentTrackId;
+      currentTrackId = spotify.track_id;
+      currentSpotifyData = spotify;
+
+      spotifyEl.innerHTML = `
         <div class="discord-activity">
           <div class="activity-inner">
-            <img src="${spotify.album_art_url}" class="activity-art" onerror="this.style.display='none'"/>
+            <img src="${spotify.album_art_url}" class="activity-art" loading="lazy" onerror="this.style.display='none'"/>
             <div class="activity-info">
-              <div class="activity-type">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="#1db954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-                listening to spotify
+              <div class="activity-type" style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="display:flex;align-items:center;gap:4px;">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="#1db954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+                  listening to spotify
+                </span>
+                <button class="lyrics-btn" id="lyricsBtn" onclick="toggleLyrics()" title="show lyrics">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18h12v-2H3v2zm0-5h12v-2H3v2zm0-7v2h12V6H3zm13 9.59L19.59 12 16 8.41 17.41 7l5 5-5 5L16 15.59z"/></svg>
+                  lyrics
+                </button>
               </div>
               <a href="${trackUrl}" target="_blank" class="activity-name">${spotify.song}</a>
               <div class="activity-sub">${spotify.artist} · ${spotify.album}</div>
@@ -204,7 +263,11 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
             </div>
           </div>
         </div>
-      `);
+      `;
+
+      if (lyricsOpen) {
+        document.getElementById('lyricsBtn').classList.add('active');
+      }
 
       if (duration > 0) {
         const start = spotify.timestamps.start;
@@ -215,39 +278,103 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
           const elapsedEl = document.getElementById('spotifyElapsed');
           if (fill) fill.style.width = pct + '%';
           if (elapsedEl) elapsedEl.textContent = fmtMs(Math.min(elapsed, duration));
+          if (lyricsOpen && currentLyrics.length) highlightLyric(elapsed);
           if (pct >= 100) clearInterval(spotifyProgressInterval);
         };
         tick();
-        spotifyProgressInterval = setInterval(tick, 1000);
+        spotifyProgressInterval = setInterval(tick, 500);
+      }
+
+      if (trackChanged) {
+        currentLyrics = [];
+        if (lyricsOpen) {
+          document.getElementById('lyricsContent').innerHTML = '<div class="lyrics-loading">loading lyrics...</div>';
+          fetchLyrics(spotify);
+        }
       }
     } else {
       localPlayer.style.display = 'block';
+      spotifyEl.innerHTML = '';
+      currentTrackId = null;
+      currentSpotifyData = null;
+      currentLyrics = [];
+      if (lyricsOpen) {
+        lyricsOpen = false;
+        document.getElementById('lyricsPanel').style.display = 'none';
+      }
     }
+  }
 
-    const games = activities.filter(a => a.type === 0);
-    for (const game of games) {
-      const largeImage = game.assets?.large_image;
-      const iconUrl = largeImage && game.application_id && !largeImage.startsWith('mp:')
-        ? `https://cdn.discordapp.com/app-assets/${game.application_id}/${largeImage}.png?size=64`
-        : null;
-      cards.push(`
-        <div class="discord-activity">
-          <div class="activity-inner">
-            ${iconUrl
-              ? `<img src="${iconUrl}" class="activity-art" onerror="this.outerHTML='<div class=\'activity-art-placeholder\'>🎮</div>'"/>`
-              : `<div class="activity-art-placeholder">🎮</div>`}
-            <div class="activity-info">
-              <div class="activity-type">playing</div>
-              <div class="activity-name">${game.name}</div>
-              ${game.details ? `<div class="activity-sub">${game.details}</div>` : ''}
-              ${game.state ? `<div class="activity-sub">${game.state}</div>` : ''}
-            </div>
-          </div>
-        </div>
-      `);
+  async function fetchLyrics(spotify) {
+    const panel = document.getElementById('lyricsPanel');
+    const content = document.getElementById('lyricsContent');
+    try {
+      const artistFirst = spotify.artist.split(';')[0].trim();
+      const url = `https://lrclib.net/api/get?artist_name=${encodeURIComponent(artistFirst)}&track_name=${encodeURIComponent(spotify.song)}&duration=${Math.round((spotify.timestamps.end - spotify.timestamps.start) / 1000)}`;
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (data.syncedLyrics) {
+        currentLyrics = parseLrc(data.syncedLyrics);
+        renderLyrics(content);
+      } else if (data.plainLyrics) {
+        content.innerHTML = `<div class="lyrics-plain">${data.plainLyrics.replace(/\n/g, '<br>')}</div>`;
+        currentLyrics = [];
+      } else {
+        content.innerHTML = '<div class="lyrics-loading">no lyrics found</div>';
+        currentLyrics = [];
+      }
+    } catch {
+      content.innerHTML = '<div class="lyrics-loading">couldn\'t load lyrics</div>';
+      currentLyrics = [];
     }
+  }
 
-    activitiesEl.innerHTML = cards.join('');
+  function parseLrc(lrc) {
+    return lrc.split('\n')
+      .map(line => {
+        const m = line.match(/\[(\d+):(\d+\.\d+)\](.*)/);
+        if (!m) return null;
+        return { ms: (parseInt(m[1]) * 60 + parseFloat(m[2])) * 1000, text: m[3].trim() };
+      })
+      .filter(l => l && l.text);
+  }
+
+  function renderLyrics(container) {
+    container.innerHTML = currentLyrics.map((l, i) =>
+      `<div class="lyric-line" id="lyric-${i}">${l.text}</div>`
+    ).join('');
+  }
+
+  function highlightLyric(elapsedMs) {
+    let active = 0;
+    for (let i = 0; i < currentLyrics.length; i++) {
+      if (elapsedMs >= currentLyrics[i].ms) active = i;
+    }
+    document.querySelectorAll('.lyric-line').forEach((el, i) => {
+      el.classList.toggle('lyric-active', i === active);
+      el.classList.toggle('lyric-past', i < active);
+    });
+    const activeEl = document.getElementById(`lyric-${active}`);
+    if (activeEl) activeEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+
+  function toggleLyrics() {
+    const panel = document.getElementById('lyricsPanel');
+    const btn = document.getElementById('lyricsBtn');
+    lyricsOpen = !lyricsOpen;
+
+    if (lyricsOpen) {
+      panel.style.display = 'block';
+      btn.classList.add('active');
+      if (currentSpotifyData && currentLyrics.length === 0) {
+        document.getElementById('lyricsContent').innerHTML = '<div class="lyrics-loading">loading lyrics...</div>';
+        fetchLyrics(currentSpotifyData);
+      }
+    } else {
+      panel.style.display = 'none';
+      btn.classList.remove('active');
+    }
   }
 
   function connectLanyard() {
@@ -270,7 +397,10 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
       setTimeout(connectLanyard, 3000);
     });
 
-    ws.addEventListener('error', () => ws.close());
+    ws.addEventListener('error', () => {
+      console.error('WebSocket error');
+      ws.close();
+    });
   }
 
   connectLanyard();
@@ -279,17 +409,21 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
   let playing = false;
 
   function initSlider() {
-    document.getElementById('volSlider').style.background = `linear-gradient(to right, #e07830 100%, #2a2a2a 100%)`;
-    if (audio.duration) document.getElementById('durationEl').textContent = fmt(audio.duration);
+    const slider = document.getElementById('volSlider');
+    slider.style.background = `linear-gradient(to right, #e07830 100%, #2a2a2a 100%)`;
+    if (audio.duration) {
+      document.getElementById('durationEl').textContent = fmt(audio.duration);
+    }
   }
   initSlider();
 
   function togglePlay() {
+    if (!audio) return;
     if (playing) {
       audio.pause();
       document.getElementById('playIcon').innerHTML = '<path d="M8 5v14l11-7z"/>';
     } else {
-      audio.play();
+      audio.play().catch(() => console.log('Audio playback failed'));
       document.getElementById('playIcon').innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
     }
     playing = !playing;
@@ -309,8 +443,7 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
   audio.addEventListener('loadedmetadata', () => {
     document.getElementById('durationEl').textContent = fmt(audio.duration);
     const slider = document.getElementById('volSlider');
-    const pct = slider.value * 100;
-    slider.style.background = `linear-gradient(to right, #e07830 ${pct}%, #2a2a2a ${pct}%)`;
+    slider.style.background = `linear-gradient(to right, #e07830 ${slider.value * 100}%, #2a2a2a ${slider.value * 100}%)`;
   });
 
   audio.addEventListener('ended', () => {
@@ -324,8 +457,7 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
     audio.volume = v;
     audio.muted = false;
     updateVolIcon(v);
-    const pct = v * 100;
-    document.getElementById('volSlider').style.background = `linear-gradient(to right, #e07830 ${pct}%, #2a2a2a ${pct}%)`;
+    document.getElementById('volSlider').style.background = `linear-gradient(to right, #e07830 ${v * 100}%, #2a2a2a ${v * 100}%)`;
   }
 
   function toggleMute() {
@@ -350,7 +482,10 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
   const canvas = document.getElementById('snow');
   const ctx = canvas.getContext('2d');
 
-  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  function resize() { 
+    canvas.width = window.innerWidth; 
+    canvas.height = window.innerHeight; 
+  }
   resize();
   window.addEventListener('resize', resize);
 
@@ -368,18 +503,24 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
 
   function drawFlakes() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (const f of flakes) {
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    for (let i = 0; i < flakes.length; i++) {
+      const f = flakes[i];
+      ctx.globalAlpha = f.opacity;
       ctx.beginPath();
       ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255,255,255,${f.opacity})`;
       ctx.fill();
       f.wobble += f.wobbleSpeed;
       f.x += f.drift + Math.sin(f.wobble) * 0.3;
       f.y += f.speed;
-      if (f.y > canvas.height + 5) { f.y = -5; f.x = Math.random() * canvas.width; }
+      if (f.y > canvas.height + 5) { 
+        f.y = -5; 
+        f.x = Math.random() * canvas.width; 
+      }
       if (f.x > canvas.width + 5) f.x = -5;
       if (f.x < -5) f.x = canvas.width + 5;
     }
+    ctx.globalAlpha = 1;
     requestAnimationFrame(drawFlakes);
   }
   drawFlakes();
