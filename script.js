@@ -111,7 +111,7 @@ function updateProfile(data) {
             <div class="activity-sub">${spotify.artist} · ${spotify.album}</div>
             <div class="spotify-progress-row">
               <span class="spotify-time" id="spotifyElapsed"></span>
-              <div class="progress-bar" style="flex:1;">
+              <div class="progress-bar disabled" style="flex:1;">
                 <div class="progress-fill" id="spotifyFill" style="width:0%;transition:none;"></div>
               </div>
               <span class="spotify-time">${fmtMs(duration)}</span>

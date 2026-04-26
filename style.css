@@ -94,7 +94,7 @@ body {
     }
 
     .profile-row {
-      background: #1c1c1c;
+      background: linear-gradient(135deg, #1f1f1f 0%, #1a1a1a 100%);
       border: 1px solid #272727;
       border-radius: 14px;
       padding: 14px 16px;
@@ -102,21 +102,39 @@ body {
       align-items: center;
       gap: 14px;
       margin-bottom: 12px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    .profile-row:hover {
+      border-color: #2a2a2a;
+      box-shadow: 0 4px 16px rgba(224, 120, 48, 0.1);
+      background: linear-gradient(135deg, #242424 0%, #1f1f1f 100%);
     }
 
     .avatar-wrap {
       position: relative;
       flex-shrink: 0;
     }
+    .avatar-wrap img {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      object-fit: cover;
+      display: block;
+      border: 2px solid #2a2a2a;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 12px rgba(224, 120, 48, 0.06);
+    }
     .avatar-placeholder {
       width: 52px;
       height: 52px;
       border-radius: 50%;
-      background: #2a2a2a;
+      background: linear-gradient(135deg, #2a2a2a 0%, #242424 100%);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 24px;
+      border: 2px solid #2a2a2a;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 12px rgba(224, 120, 48, 0.06);
     }
     .status-dot {
       width: 14px;
@@ -130,10 +148,15 @@ body {
     }
     .status-dot.online { background: #4ade80; }
 
-    .profile-info { flex: 1; }
+    .profile-info { 
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
     .profile-name {
       font-size: 15px;
-      font-weight: 600;
+      font-weight: 700;
       color: #fff;
       display: flex;
       align-items: center;
@@ -143,17 +166,23 @@ body {
 
     .badge {
       margin-left: auto;
-      background: #1f1f1f;
+      background: linear-gradient(135deg, #252525 0%, #1f1f1f 100%);
       border: 1px solid #2e2e2e;
       border-radius: 999px;
       padding: 6px 14px;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
       color: #ccc;
       display: flex;
       align-items: center;
       gap: 6px;
       white-space: nowrap;
+      transition: all 0.3s ease;
+    }
+    .badge:hover {
+      border-color: rgba(224, 120, 48, 0.4);
+      background: linear-gradient(135deg, rgba(224, 120, 48, 0.1) 0%, rgba(224, 120, 48, 0.05) 100%);
+      color: #e07830;
     }
 
     .player {
@@ -225,17 +254,31 @@ body {
     }
     .progress-bar {
       flex: 1;
-      height: 3px;
-      background: #2e2e2e;
+      height: 4px;
+      background: #2a2a2a;
       border-radius: 99px;
       cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .progress-bar:hover {
+      height: 5px;
+      background: #323232;
+    }
+    .progress-bar.disabled {
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    .progress-bar.disabled:hover {
+      height: 4px;
+      background: #2a2a2a;
     }
     .progress-fill {
       height: 100%;
       border-radius: 99px;
-      background: #e07830;
+      background: linear-gradient(90deg, #e07830 0%, #f08840 100%);
       width: 0%;
       transition: width 0.4s linear;
+      box-shadow: 0 0 8px rgba(224, 120, 48, 0.4);
     }
 
     .section-label {
@@ -369,17 +412,26 @@ body {
     .footer svg { color: #e07830; }
 
 .discord-activity {
-  background: #1c1c1c;
+  background: linear-gradient(135deg, #1f1f1f 0%, #1a1a1a 100%);
   border: 1px solid #272727;
   border-radius: 14px;
   padding: 12px 16px;
   margin-bottom: 12px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.discord-activity:hover {
+  border-color: #2a2a2a;
+  box-shadow: 0 4px 16px rgba(224, 120, 48, 0.1);
+  background: linear-gradient(135deg, #242424 0%, #1f1f1f 100%);
 }
 
 .activity-inner {
   display: flex;
   align-items: center;
   gap: 12px;
+  transition: all 0.3s ease;
 }
 
 .activity-art {
@@ -388,28 +440,37 @@ body {
   border-radius: 8px;
   object-fit: cover;
   flex-shrink: 0;
+  border: 1px solid #2a2a2a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 16px rgba(224, 120, 48, 0.08);
 }
 
 .activity-art-placeholder {
   width: 48px;
   height: 48px;
   border-radius: 8px;
-  background: #2a2a2a;
+  background: linear-gradient(135deg, #2a2a2a 0%, #242424 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 22px;
   flex-shrink: 0;
+  border: 1px solid #2a2a2a;
 }
 
-.activity-info { flex: 1; min-width: 0; }
+.activity-info { 
+  flex: 1; 
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
 
 .activity-type {
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: #555;
-  font-weight: 600;
+  color: #1db954;
+  font-weight: 700;
   margin-bottom: 3px;
   display: flex;
   align-items: center;
@@ -418,37 +479,40 @@ body {
 
 .activity-name {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   color: #fff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   display: block;
   text-decoration: none;
+  transition: color 0.3s ease;
 }
 
 a.activity-name:hover { color: #e07830; }
 
 .activity-sub {
-  font-size: 12px;
-  color: #666;
+  font-size: 11px;
+  color: #777;
   margin-top: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color 0.3s ease;
 }
 
 .spotify-progress-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 8px;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 .spotify-time {
   font-size: 10px;
   color: #555;
   min-width: 28px;
+  font-weight: 500;
 }
 
 .lyrics-btn {
@@ -612,8 +676,7 @@ a.activity-name:hover { color: #e07830; }
 
     .lw-lyrics {
       flex: 1;
-      overflow-y: auto;
-      overflow-x: hidden;
+      overflow: hidden;
       padding: 24px 24px 48px;
       scrollbar-width: thin;
       scrollbar-color: #2a2a2a transparent;
@@ -633,21 +696,24 @@ a.activity-name:hover { color: #e07830; }
       font-size: 15px;
       color: #444;
       line-height: 2;
-      transition: color 0.3s, font-size 0.2s;
+      transition: color 0.4s, background 0.4s, transform 0.3s, opacity 0.4s, font-weight 0.3s;
       cursor: default;
-      font-weight: 400;
+      font-weight: 500;
+      transform: scale(1);
+      opacity: 0.35;
     }
     .lw-lyric-line.lw-lyric-past { 
       color: #555;
+      opacity: 0.6;
     }
     .lw-lyric-line.lw-lyric-active {
       color: #fff;
-      font-weight: 700;
-      font-size: 16px;
       background: linear-gradient(135deg, rgba(224,120,48,0.15) 0%, transparent 100%);
       padding: 4px 8px;
       border-radius: 8px;
       margin: -4px -8px;
+      font-weight: 700;
+      opacity: 1;
     }
 
 .lyrics-loading {
