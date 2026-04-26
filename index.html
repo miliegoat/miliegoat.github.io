@@ -54,9 +54,9 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
     <div class="badge">🪨 coal</div>
   </div>
 
-  <div id="discordActivity" style="display:none;" class="discord-activity"></div>
+  <div id="discordActivities"></div>
 
-  <div class="player">
+  <div class="player" id="localPlayer">
     <div class="player-top">
       <div class="album-art" id="albumArt">
         <img src="cover.jpg" style="width:40px;height:40px;border-radius:6px;object-fit:cover">
@@ -137,18 +137,16 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
   const STATUS_COLORS = { online: '#4ade80', idle: '#facc15', dnd: '#f87171', offline: '#6b7280' };
   const STATUS_LABELS = { online: 'online', idle: 'idle', dnd: 'do not disturb', offline: 'offline' };
 
-  async function fetchLanyard() {
-    try {
-      const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_ID}`);
-      const json = await res.json();
-      if (json.success) updateProfile(json.data);
-    } catch (e) {}
+  let spotifyProgressInterval = null;
+
+  function fmtMs(ms) {
+    const s = Math.floor(ms / 1000);
+    const m = Math.floor(s / 60);
+    return m + ':' + String(s % 60).padStart(2, '0');
   }
 
   function updateProfile(data) {
     const { discord_user, discord_status, activities, listening_to_spotify, spotify } = data;
-    const profile = document.getElementById('discordProfile');
-    const activityEl = document.getElementById('discordActivity');
 
     const avatarUrl = discord_user.avatar
       ? `https://cdn.discordapp.com/avatars/${discord_user.id}/${discord_user.avatar}.${discord_user.avatar.startsWith('a_') ? 'gif' : 'png'}?size=128`
@@ -157,11 +155,10 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
     const displayName = discord_user.global_name || discord_user.username;
     const statusColor = STATUS_COLORS[discord_status] || STATUS_COLORS.offline;
     const statusLabel = STATUS_LABELS[discord_status] || 'offline';
-
     const customStatus = activities.find(a => a.type === 4);
     const customStatusText = customStatus ? (customStatus.state || customStatus.emoji?.name || '') : '';
 
-    profile.innerHTML = `
+    document.getElementById('discordProfile').innerHTML = `
       <div class="avatar-wrap">
         <img src="${avatarUrl}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
         <div class="avatar-placeholder" style="display:none;">🐹</div>
@@ -175,57 +172,115 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
       <div class="badge">🪨 coal</div>
     `;
 
-    const game = activities.find(a => a.type === 0);
+    const activitiesEl = document.getElementById('discordActivities');
+    const localPlayer = document.getElementById('localPlayer');
+    const cards = [];
+
+    clearInterval(spotifyProgressInterval);
 
     if (listening_to_spotify && spotify) {
-      const albumArt = spotify.album_art_url;
+      localPlayer.style.display = 'none';
       const trackUrl = `https://open.spotify.com/track/${spotify.track_id}`;
-      activityEl.style.display = 'block';
-      activityEl.innerHTML = `
-        <div class="activity-inner">
-          <img src="${albumArt}" class="activity-art" onerror="this.style.display='none'"/>
-          <div class="activity-info">
-            <div class="activity-type">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="#1db954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-              listening to spotify
+      const duration = spotify.timestamps ? spotify.timestamps.end - spotify.timestamps.start : 0;
+
+      cards.push(`
+        <div class="discord-activity">
+          <div class="activity-inner">
+            <img src="${spotify.album_art_url}" class="activity-art" onerror="this.style.display='none'"/>
+            <div class="activity-info">
+              <div class="activity-type">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="#1db954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+                listening to spotify
+              </div>
+              <a href="${trackUrl}" target="_blank" class="activity-name">${spotify.song}</a>
+              <div class="activity-sub">${spotify.artist} · ${spotify.album}</div>
+              <div class="spotify-progress-row">
+                <span class="spotify-time" id="spotifyElapsed"></span>
+                <div class="progress-bar" style="flex:1;">
+                  <div class="progress-fill" id="spotifyFill" style="width:0%;transition:none;"></div>
+                </div>
+                <span class="spotify-time">${fmtMs(duration)}</span>
+              </div>
             </div>
-            <a href="${trackUrl}" target="_blank" class="activity-name">${spotify.song}</a>
-            <div class="activity-sub">by ${spotify.artist}</div>
           </div>
         </div>
-      `;
-    } else if (game) {
-      activityEl.style.display = 'block';
-      const iconUrl = game.application_id
-        ? `https://cdn.discordapp.com/app-icons/${game.application_id}/${game.assets?.large_image}.png?size=64`
-        : null;
-      activityEl.innerHTML = `
-        <div class="activity-inner">
-          ${iconUrl ? `<img src="${iconUrl}" class="activity-art" onerror="this.style.display='none'"/>` : '<div class="activity-art-placeholder">🎮</div>'}
-          <div class="activity-info">
-            <div class="activity-type">playing</div>
-            <div class="activity-name">${game.name}</div>
-            ${game.details ? `<div class="activity-sub">${game.details}</div>` : ''}
-          </div>
-        </div>
-      `;
+      `);
+
+      if (duration > 0) {
+        const start = spotify.timestamps.start;
+        const tick = () => {
+          const elapsed = Date.now() - start;
+          const pct = Math.min(100, (elapsed / duration) * 100);
+          const fill = document.getElementById('spotifyFill');
+          const elapsedEl = document.getElementById('spotifyElapsed');
+          if (fill) fill.style.width = pct + '%';
+          if (elapsedEl) elapsedEl.textContent = fmtMs(Math.min(elapsed, duration));
+          if (pct >= 100) clearInterval(spotifyProgressInterval);
+        };
+        tick();
+        spotifyProgressInterval = setInterval(tick, 1000);
+      }
     } else {
-      activityEl.style.display = 'none';
+      localPlayer.style.display = 'block';
     }
+
+    const games = activities.filter(a => a.type === 0);
+    for (const game of games) {
+      const largeImage = game.assets?.large_image;
+      const iconUrl = largeImage && game.application_id && !largeImage.startsWith('mp:')
+        ? `https://cdn.discordapp.com/app-assets/${game.application_id}/${largeImage}.png?size=64`
+        : null;
+      cards.push(`
+        <div class="discord-activity">
+          <div class="activity-inner">
+            ${iconUrl
+              ? `<img src="${iconUrl}" class="activity-art" onerror="this.outerHTML='<div class=\'activity-art-placeholder\'>🎮</div>'"/>`
+              : `<div class="activity-art-placeholder">🎮</div>`}
+            <div class="activity-info">
+              <div class="activity-type">playing</div>
+              <div class="activity-name">${game.name}</div>
+              ${game.details ? `<div class="activity-sub">${game.details}</div>` : ''}
+              ${game.state ? `<div class="activity-sub">${game.state}</div>` : ''}
+            </div>
+          </div>
+        </div>
+      `);
+    }
+
+    activitiesEl.innerHTML = cards.join('');
   }
 
-  fetchLanyard();
-  setInterval(fetchLanyard, 30000);
+  function connectLanyard() {
+    const ws = new WebSocket('wss://api.lanyard.rest/socket');
+    let heartbeat;
+
+    ws.addEventListener('message', (e) => {
+      const msg = JSON.parse(e.data);
+      if (msg.op === 1) {
+        ws.send(JSON.stringify({ op: 2, d: { subscribe_to_id: DISCORD_ID } }));
+        heartbeat = setInterval(() => ws.send(JSON.stringify({ op: 3 })), msg.d.heartbeat_interval);
+      }
+      if (msg.op === 0 && (msg.t === 'INIT_STATE' || msg.t === 'PRESENCE_UPDATE')) {
+        updateProfile(msg.d);
+      }
+    });
+
+    ws.addEventListener('close', () => {
+      clearInterval(heartbeat);
+      setTimeout(connectLanyard, 3000);
+    });
+
+    ws.addEventListener('error', () => ws.close());
+  }
+
+  connectLanyard();
 
   const audio = document.getElementById('audio');
   let playing = false;
 
   function initSlider() {
-    const slider = document.getElementById('volSlider');
-    slider.style.background = `linear-gradient(to right, #e07830 100%, #2a2a2a 100%)`;
-    if (audio.duration) {
-      document.getElementById('durationEl').textContent = fmt(audio.duration);
-    }
+    document.getElementById('volSlider').style.background = `linear-gradient(to right, #e07830 100%, #2a2a2a 100%)`;
+    if (audio.duration) document.getElementById('durationEl').textContent = fmt(audio.duration);
   }
   initSlider();
 
@@ -270,8 +325,7 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
     audio.muted = false;
     updateVolIcon(v);
     const pct = v * 100;
-    document.getElementById('volSlider').style.background =
-      `linear-gradient(to right, #e07830 ${pct}%, #2a2a2a ${pct}%)`;
+    document.getElementById('volSlider').style.background = `linear-gradient(to right, #e07830 ${pct}%, #2a2a2a ${pct}%)`;
   }
 
   function toggleMute() {
@@ -290,17 +344,13 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
 
   function seek(e) {
     if (!audio.duration) return;
-    const bar = e.currentTarget;
-    audio.currentTime = (e.offsetX / bar.clientWidth) * audio.duration;
+    audio.currentTime = (e.offsetX / e.currentTarget.clientWidth) * audio.duration;
   }
 
   const canvas = document.getElementById('snow');
   const ctx = canvas.getContext('2d');
 
-  function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-  }
+  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
   resize();
   window.addEventListener('resize', resize);
 
