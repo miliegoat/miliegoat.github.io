@@ -1,10 +1,19 @@
-  (function() {
-    const viewKey = 'milsite_views';
-    let views = parseInt(localStorage.getItem(viewKey) || '0', 10);
-    views++;
-    localStorage.setItem(viewKey, views);
-    document.getElementById('viewCount').textContent = views;
-  })();
+(async function() {
+  try {
+    const alreadyCounted = sessionStorage.getItem('mil_counted');
+    const url = alreadyCounted
+      ? 'https://api.counterapi.dev/v2/miliegoat/viewsmiliegoat'
+      : 'https://api.counterapi.dev/v2/miliegoat/viewsmiliegoat/up';
+
+    const res = await fetch(url);
+    const data = await res.json();
+    document.getElementById('viewCount').textContent = Number(data.data.up_count).toLocaleString();
+
+    if (!alreadyCounted) sessionStorage.setItem('mil_counted', '1');
+  } catch {
+    document.getElementById('viewCount').textContent = '—';
+  }
+})();
 
   const DISCORD_ID = '1125787079654260777';
   const STATUS_COLORS = { online: '#4ade80', idle: '#facc15', dnd: '#f87171', offline: '#6b7280' };
