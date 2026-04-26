@@ -343,6 +343,7 @@
       line-height: 2;
     }
     .footer svg { color: #e07830; }
+
 .discord-activity {
   background: #1c1c1c;
   border: 1px solid #272727;
@@ -411,4 +412,17 @@ a.activity-name:hover { color: #e07830; }
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.spotify-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.spotify-time {
+  font-size: 10px;
+  color: #555;
+  min-width: 28px;
 }
