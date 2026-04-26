@@ -186,11 +186,18 @@ body {
     }
 
     .player {
-      background: #1c1c1c;
+      background: linear-gradient(135deg, #1f1f1f 0%, #1a1a1a 100%);
       border: 1px solid #272727;
       border-radius: 14px;
       padding: 14px 16px;
       margin-bottom: 16px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    .player:hover {
+      border-color: #2a2a2a;
+      box-shadow: 0 4px 16px rgba(224, 120, 48, 0.1);
+      background: linear-gradient(135deg, #242424 0%, #1f1f1f 100%);
     }
 
     .player-top {
