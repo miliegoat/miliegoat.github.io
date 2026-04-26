@@ -31,7 +31,6 @@ body {
       max-width: 500px;
       position: relative;
       z-index: 1;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
       flex-shrink: 0;
     }
 
@@ -94,7 +93,7 @@ body {
     }
 
     .profile-row {
-      background: linear-gradient(135deg, #1f1f1f 0%, #1a1a1a 100%);
+      background: #1f1f1f;
       border: 1px solid #272727;
       border-radius: 14px;
       padding: 14px 16px;
@@ -103,12 +102,10 @@ body {
       gap: 14px;
       margin-bottom: 12px;
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
     .profile-row:hover {
-      border-color: #2a2a2a;
-      box-shadow: 0 4px 16px rgba(224, 120, 48, 0.1);
-      background: linear-gradient(135deg, #242424 0%, #1f1f1f 100%);
+      border-color: rgba(224, 120, 48, 0.3);
+      background: #242424;
     }
 
     .avatar-wrap {
@@ -122,19 +119,17 @@ body {
       object-fit: cover;
       display: block;
       border: 2px solid #2a2a2a;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 12px rgba(224, 120, 48, 0.06);
     }
     .avatar-placeholder {
       width: 52px;
       height: 52px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #2a2a2a 0%, #242424 100%);
+      background: #2a2a2a;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 24px;
       border: 2px solid #2a2a2a;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 12px rgba(224, 120, 48, 0.06);
     }
     .status-dot {
       width: 14px;
@@ -166,7 +161,7 @@ body {
 
     .badge {
       margin-left: auto;
-      background: linear-gradient(135deg, #252525 0%, #1f1f1f 100%);
+      background: #252525;
       border: 1px solid #2e2e2e;
       border-radius: 999px;
       padding: 6px 14px;
@@ -181,23 +176,21 @@ body {
     }
     .badge:hover {
       border-color: rgba(224, 120, 48, 0.4);
-      background: linear-gradient(135deg, rgba(224, 120, 48, 0.1) 0%, rgba(224, 120, 48, 0.05) 100%);
+      background: rgba(224, 120, 48, 0.08);
       color: #e07830;
     }
 
     .player {
-      background: linear-gradient(135deg, #1f1f1f 0%, #1a1a1a 100%);
+      background: #1f1f1f;
       border: 1px solid #272727;
       border-radius: 14px;
       padding: 14px 16px;
       margin-bottom: 16px;
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
     .player:hover {
-      border-color: #2a2a2a;
-      box-shadow: 0 4px 16px rgba(224, 120, 48, 0.1);
-      background: linear-gradient(135deg, #242424 0%, #1f1f1f 100%);
+      border-color: rgba(224, 120, 48, 0.3);
+      background: #242424;
     }
 
     .player-top {
@@ -282,10 +275,9 @@ body {
     .progress-fill {
       height: 100%;
       border-radius: 99px;
-      background: linear-gradient(90deg, #e07830 0%, #f08840 100%);
+      background: #e07830;
       width: 0%;
       transition: width 0.4s linear;
-      box-shadow: 0 0 8px rgba(224, 120, 48, 0.4);
     }
 
     .section-label {
@@ -419,19 +411,17 @@ body {
     .footer svg { color: #e07830; }
 
 .discord-activity {
-  background: linear-gradient(135deg, #1f1f1f 0%, #1a1a1a 100%);
+  background: #1f1f1f;
   border: 1px solid #272727;
   border-radius: 14px;
   padding: 12px 16px;
   margin-bottom: 12px;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .discord-activity:hover {
-  border-color: #2a2a2a;
-  box-shadow: 0 4px 16px rgba(224, 120, 48, 0.1);
-  background: linear-gradient(135deg, #242424 0%, #1f1f1f 100%);
+  border-color: rgba(224, 120, 48, 0.3);
+  background: #242424;
 }
 
 .activity-inner {
@@ -448,14 +438,13 @@ body {
   object-fit: cover;
   flex-shrink: 0;
   border: 1px solid #2a2a2a;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 16px rgba(224, 120, 48, 0.08);
 }
 
 .activity-art-placeholder {
   width: 48px;
   height: 48px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #2a2a2a 0%, #242424 100%);
+  background: #2a2a2a;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -579,10 +568,9 @@ a.activity-name:hover { color: #e07830; }
     .lyrics-side-panel {
       width: 476px;
       height: 520px;
-      background: linear-gradient(135deg, #161616 0%, #1a1a1a 100%);
+      background: #161616;
       border: 1px solid #252525;
       border-radius: 24px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 1px rgba(224, 120, 48, 0.1);
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -592,7 +580,6 @@ a.activity-name:hover { color: #e07830; }
     
     .lyrics-side-panel:hover {
       border-color: #2a2a2a;
-      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5), 0 0 20px rgba(224, 120, 48, 0.08);
     }
     
     @media (max-width: 1039px) {
@@ -763,25 +750,3 @@ a.activity-name:hover { color: #e07830; }
   0%   { opacity: 1; transform: translateX(0); }
   100% { opacity: 0; transform: translateX(28px); }
 }
-/* 67676767 */
-/* 67676767 */
-/* 67676767 */
-/* 67676767 */
-/* 67676767 */
-/* 67676767 */
-/* 67676767 */
-/* 67676767 */
-/* 67676767 */
-/* 67676767 */
-/* 67676767 */
-/* 67676767 */
-/* 67676767 */
-/* 67676767 */
-/* 67676767 */
-/* 67676767 */
-/* 67676767 */
-/* 67676767 */
-/* 67676767 */
-/* 67676767 */
-/* 67676767 */
-/* 67676767 */
