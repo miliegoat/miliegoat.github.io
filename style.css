@@ -1,14 +1,20 @@
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      background: #0a0a0a;
-      font-family: 'Inter', sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 16px;
-    }
+    *, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #0a0a0a;
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  overflow-x: hidden;
+}
 
     .card {
       background: #161616;
@@ -19,6 +25,7 @@
       max-width: 460px;
       position: relative;
       z-index: 1;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     }
 
     .views {
@@ -34,6 +41,7 @@
       gap: 6px;
       font-size: 13px;
       color: #ccc;
+      font-variant-numeric: tabular-nums;
     }
     .views svg { color: #e07830; }
 
@@ -44,7 +52,9 @@
       margin-bottom: 14px;
       margin-top: 4px;
       letter-spacing: -0.5px;
+      font-variant-numeric: tabular-nums;
     }
+
     .name span {
       text-decoration: underline;
       text-decoration-color: #e07830;
@@ -73,6 +83,7 @@
       border: none;
       border-top: 1px solid #232323;
       margin-bottom: 16px;
+      background: none;
     }
 
     .profile-row {
@@ -262,43 +273,51 @@
         justify-content: center;
         width: 100%;
     }
-   .badges-row img {
-     image-rendering: pixelated;
-     height: 31px;
-     border: 1px solid #2a2a2a;
+       .badges-row img {
+      image-rendering: pixelated;
+      height: 31px;
+      border: 1px solid #2a2a2a;
     }
 
 
 #snow {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      pointer-events: none;
-      z-index: 0;
-    }
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
 
     .parallax-bg {
       position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 120%;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 120%;
       z-index: 0;
       pointer-events: none;
       overflow: hidden;
     }
+
     .parallax-bg .layer {
       position: absolute;
-      width: 100%; height: 100%;
+      width: 100%;
+      height: 100%;
       will-change: transform;
     }
+
     .parallax-bg .layer-1 {
       background:
-        radial-gradient(ellipse 60% 40% at 20% 30%, rgba(224,120,48,0.07) 0%, transparent 70%),
-        radial-gradient(ellipse 50% 35% at 80% 70%, rgba(224,120,48,0.05) 0%, transparent 70%);
+        radial-gradient(ellipse 60% 40% at 20% 30%, rgba(224, 120, 48, 0.07) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 35% at 80% 70%, rgba(224, 120, 48, 0.05) 0%, transparent 70%);
     }
+
     .parallax-bg .layer-2 {
       background:
-        radial-gradient(ellipse 30% 25% at 65% 20%, rgba(180,90,30,0.06) 0%, transparent 60%),
-        radial-gradient(ellipse 40% 30% at 30% 80%, rgba(200,100,40,0.04) 0%, transparent 60%);
+        radial-gradient(ellipse 30% 25% at 65% 20%, rgba(180, 90, 30, 0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 30% at 30% 80%, rgba(200, 100, 40, 0.04) 0%, transparent 60%);
     }
 
     .vol-slider {
@@ -307,10 +326,12 @@
       width: 70px;
       height: 3px;
       border-radius: 2px;
-      background: #2a2a2a;
+      background: linear-gradient(to right, #e07830 0%, #2a2a2a 0%);
       outline: none;
       cursor: pointer;
+      border: none;
     }
+
     .vol-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
       width: 10px;
@@ -319,6 +340,7 @@
       background: #e07830;
       cursor: pointer;
     }
+
     .vol-slider::-moz-range-thumb {
       width: 10px;
       height: 10px;
@@ -326,10 +348,6 @@
       background: #e07830;
       border: none;
       cursor: pointer;
-    }
-
-    .vol-slider {
-      background: linear-gradient(to right, #e07830 0%, #2a2a2a 0%);
     }
 
     .footer {
@@ -425,4 +443,81 @@ a.activity-name:hover { color: #e07830; }
   font-size: 10px;
   color: #555;
   min-width: 28px;
+}
+
+.lyrics-btn {
+  background: #252525;
+  border: 1px solid #333;
+  border-radius: 999px;
+  color: #666;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  font-family: inherit;
+}
+
+.lyrics-btn:hover {
+  color: #e07830;
+  border-color: rgba(224,120,48,0.4);
+}
+
+.lyrics-btn.active {
+  color: #e07830;
+  border-color: rgba(224,120,48,0.4);
+  background: rgba(224,120,48,0.08);
+}
+
+.lyrics-panel {
+  background: #1c1c1c;
+  border: 1px solid #272727;
+  border-radius: 14px;
+  padding: 4px 0;
+  margin-bottom: 12px;
+  max-height: 220px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #2e2e2e transparent;
+}
+
+.lyrics-panel::-webkit-scrollbar { width: 4px; }
+.lyrics-panel::-webkit-scrollbar-track { background: transparent; }
+.lyrics-panel::-webkit-scrollbar-thumb { background: #2e2e2e; border-radius: 2px; }
+
+.lyrics-content { padding: 10px 16px; }
+
+.lyrics-loading {
+  font-size: 12px;
+  color: #444;
+  font-style: italic;
+  text-align: center;
+  padding: 16px 0;
+}
+
+.lyric-line {
+  font-size: 13px;
+  color: #3a3a3a;
+  line-height: 1.8;
+  transition: color 0.3s, font-size 0.2s;
+  cursor: default;
+}
+
+.lyric-line.lyric-past { color: #555; }
+
+.lyric-line.lyric-active {
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.lyrics-plain {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.8;
 }
