@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
@@ -45,17 +44,17 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
 
   <hr/>
 
-  <div class="profile-row">
+  <div class="profile-row" id="discordProfile">
     <div class="avatar-wrap">
       <div class="avatar-placeholder">🐹</div>
     </div>
     <div class="profile-info">
-      <div class="profile-name">
-        mil <span class="star">☆</span>
-      </div>
+      <div class="profile-name">mil <span class="star">☆</span></div>
     </div>
     <div class="badge">🪨 coal</div>
   </div>
+
+  <div id="discordActivity" style="display:none;" class="discord-activity"></div>
 
   <div class="player">
     <div class="player-top">
@@ -134,6 +133,90 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
 <audio id="audio" src="ohquesera.mp3"></audio>
 
 <script>
+  const DISCORD_ID = '1125787079654260777';
+  const STATUS_COLORS = { online: '#4ade80', idle: '#facc15', dnd: '#f87171', offline: '#6b7280' };
+  const STATUS_LABELS = { online: 'online', idle: 'idle', dnd: 'do not disturb', offline: 'offline' };
+
+  async function fetchLanyard() {
+    try {
+      const res = await fetch(`https://api.lanyard.rest/v1/users/${DISCORD_ID}`);
+      const json = await res.json();
+      if (json.success) updateProfile(json.data);
+    } catch (e) {}
+  }
+
+  function updateProfile(data) {
+    const { discord_user, discord_status, activities, listening_to_spotify, spotify } = data;
+    const profile = document.getElementById('discordProfile');
+    const activityEl = document.getElementById('discordActivity');
+
+    const avatarUrl = discord_user.avatar
+      ? `https://cdn.discordapp.com/avatars/${discord_user.id}/${discord_user.avatar}.${discord_user.avatar.startsWith('a_') ? 'gif' : 'png'}?size=128`
+      : `https://cdn.discordapp.com/embed/avatars/${Number(discord_user.discriminator || 0) % 5}.png`;
+
+    const displayName = discord_user.global_name || discord_user.username;
+    const statusColor = STATUS_COLORS[discord_status] || STATUS_COLORS.offline;
+    const statusLabel = STATUS_LABELS[discord_status] || 'offline';
+
+    const customStatus = activities.find(a => a.type === 4);
+    const customStatusText = customStatus ? (customStatus.state || customStatus.emoji?.name || '') : '';
+
+    profile.innerHTML = `
+      <div class="avatar-wrap">
+        <img src="${avatarUrl}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;display:block;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+        <div class="avatar-placeholder" style="display:none;">🐹</div>
+        <div class="status-dot" style="background:${statusColor};" title="${statusLabel}"></div>
+      </div>
+      <div class="profile-info">
+        <div class="profile-name">${displayName} <span class="star">☆</span></div>
+        ${customStatusText ? `<div style="font-size:12px;color:#666;margin-top:3px;">${customStatusText}</div>` : ''}
+        <div style="font-size:11px;color:${statusColor};margin-top:2px;font-weight:500;">${statusLabel}</div>
+      </div>
+      <div class="badge">🪨 coal</div>
+    `;
+
+    const game = activities.find(a => a.type === 0);
+
+    if (listening_to_spotify && spotify) {
+      const albumArt = spotify.album_art_url;
+      const trackUrl = `https://open.spotify.com/track/${spotify.track_id}`;
+      activityEl.style.display = 'block';
+      activityEl.innerHTML = `
+        <div class="activity-inner">
+          <img src="${albumArt}" class="activity-art" onerror="this.style.display='none'"/>
+          <div class="activity-info">
+            <div class="activity-type">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="#1db954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+              listening to spotify
+            </div>
+            <a href="${trackUrl}" target="_blank" class="activity-name">${spotify.song}</a>
+            <div class="activity-sub">by ${spotify.artist}</div>
+          </div>
+        </div>
+      `;
+    } else if (game) {
+      activityEl.style.display = 'block';
+      const iconUrl = game.application_id
+        ? `https://cdn.discordapp.com/app-icons/${game.application_id}/${game.assets?.large_image}.png?size=64`
+        : null;
+      activityEl.innerHTML = `
+        <div class="activity-inner">
+          ${iconUrl ? `<img src="${iconUrl}" class="activity-art" onerror="this.style.display='none'"/>` : '<div class="activity-art-placeholder">🎮</div>'}
+          <div class="activity-info">
+            <div class="activity-type">playing</div>
+            <div class="activity-name">${game.name}</div>
+            ${game.details ? `<div class="activity-sub">${game.details}</div>` : ''}
+          </div>
+        </div>
+      `;
+    } else {
+      activityEl.style.display = 'none';
+    }
+  }
+
+  fetchLanyard();
+  setInterval(fetchLanyard, 30000);
+
   const audio = document.getElementById('audio');
   let playing = false;
 
@@ -240,27 +323,20 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
       ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(255,255,255,${f.opacity})`;
       ctx.fill();
-
       f.wobble += f.wobbleSpeed;
       f.x += f.drift + Math.sin(f.wobble) * 0.3;
       f.y += f.speed;
-
-      if (f.y > canvas.height + 5) {
-        f.y = -5;
-        f.x = Math.random() * canvas.width;
-      }
+      if (f.y > canvas.height + 5) { f.y = -5; f.x = Math.random() * canvas.width; }
       if (f.x > canvas.width + 5) f.x = -5;
       if (f.x < -5) f.x = canvas.width + 5;
     }
     requestAnimationFrame(drawFlakes);
   }
   drawFlakes();
-  
+
   const layer1 = document.getElementById('layer1');
   const layer2 = document.getElementById('layer2');
-
-  let targetX = 0, targetY = 0;
-  let currentX = 0, currentY = 0;
+  let targetX = 0, targetY = 0, currentX = 0, currentY = 0;
 
   window.addEventListener('mousemove', (e) => {
     targetX = (e.clientX / window.innerWidth - 0.5) * 2;
@@ -270,10 +346,8 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
   function animateParallax() {
     currentX += (targetX - currentX) * 0.04;
     currentY += (targetY - currentY) * 0.04;
-
     layer1.style.transform = `translate(${currentX * 18}px, ${currentY * 12}px)`;
     layer2.style.transform = `translate(${currentX * -10}px, ${currentY * -7}px)`;
-
     requestAnimationFrame(animateParallax);
   }
   animateParallax();
