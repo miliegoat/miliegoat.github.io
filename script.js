@@ -23,13 +23,100 @@ let lyricsOpen = false;
 let lyricsWasOpen = false;
 let currentTrackId = null;
 let currentSpotifyData = null;
+const appIconCache = new Map();
 
 function fmtMs(ms) {
   const s = Math.floor(ms / 1000);
   return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
 }
 
-function updateProfile(data) {
+function fmtDuration(ms) {
+  const totalSeconds = Math.floor(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  }
+  return `${minutes}:${String(seconds).padStart(2, '0')}`;
+}
+
+async function getApplicationIcon(applicationId) {
+  if (!applicationId) return null;
+  if (appIconCache.has(applicationId)) return appIconCache.get(applicationId);
+
+  try {
+    const res = await fetch(`https://discord.com/api/v10/applications/${applicationId}/rpc`);
+    if (!res.ok) throw new Error('app metadata unavailable');
+    const data = await res.json();
+    const iconHash = data.icon;
+    const iconUrl = iconHash
+      ? `https://cdn.discordapp.com/app-icons/${applicationId}/${iconHash}.png?size=64`
+      : null;
+    appIconCache.set(applicationId, iconUrl);
+    return iconUrl;
+  } catch {
+    appIconCache.set(applicationId, null);
+    return null;
+  }
+}
+
+function resolveActivityImage(game) {
+  const assets = game.assets || {};
+  const image = assets.large_image || assets.small_image || assets.largeImage || assets.smallImage;
+  if (!image || typeof image !== 'string') return null;
+
+  if (image.startsWith('mp:external/')) {
+    return `https://media.discordapp.net/${image.slice('mp:'.length)}?size=64`;
+  }
+
+  if (image.startsWith('mp:')) {
+    const path = image.slice('mp:'.length);
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path;
+    }
+    return game.application_id
+      ? `https://cdn.discordapp.com/app-assets/${game.application_id}/${path}.png?size=64`
+      : null;
+  }
+
+  if (image.startsWith('https://') || image.startsWith('http://')) {
+    return image;
+  }
+
+  return game.application_id
+    ? `https://cdn.discordapp.com/app-assets/${game.application_id}/${image}.png?size=64`
+    : null;
+}
+
+async function renderGameActivities(activities) {
+  const cards = await Promise.all(activities.filter(a => a.type === 0).map(async game => {
+    let iconUrl = resolveActivityImage(game);
+    if (!iconUrl && game.application_id) {
+      iconUrl = await getApplicationIcon(game.application_id);
+    }
+    const elapsed = game.timestamps?.start ? fmtDuration(Date.now() - game.timestamps.start) : null;
+    return `
+      <div class="discord-activity">
+        <div class="activity-inner">
+          ${iconUrl
+            ? `<img src="${iconUrl}" class="activity-art" loading="lazy" onerror="this.outerHTML='<div class=&quot;activity-art-placeholder&quot;>🎮</div>'"/>`
+            : `<div class="activity-art-placeholder">🎮</div>`}
+          <div class="activity-info">
+            <div class="activity-type">playing</div>
+            <div class="activity-name">${game.name}</div>
+            ${game.details ? `<div class="activity-sub">${game.details}</div>` : ''}
+            ${game.state ? `<div class="activity-sub">${game.state}</div>` : ''}
+            ${elapsed ? `<div class="activity-sub">played ${elapsed}</div>` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  }));
+  document.getElementById('gameActivities').innerHTML = cards.join('');
+}
+
+async function updateProfile(data) {
   const { discord_user, discord_status, activities, listening_to_spotify, spotify } = data;
 
   const avatarUrl = discord_user.avatar
@@ -63,27 +150,7 @@ function updateProfile(data) {
 
   clearInterval(spotifyProgressInterval);
 
-  document.getElementById('gameActivities').innerHTML = activities.filter(a => a.type === 0).map(game => {
-    const largeImage = game.assets?.large_image;
-    const iconUrl = largeImage && game.application_id && !largeImage.startsWith('mp:')
-      ? `https://cdn.discordapp.com/app-assets/${game.application_id}/${largeImage}.png?size=64`
-      : null;
-    return `
-      <div class="discord-activity">
-        <div class="activity-inner">
-          ${iconUrl
-            ? `<img src="${iconUrl}" class="activity-art" loading="lazy" onerror="this.outerHTML='<div class=&quot;activity-art-placeholder&quot;>🎮</div>'"/>`
-            : `<div class="activity-art-placeholder">🎮</div>`}
-          <div class="activity-info">
-            <div class="activity-type">playing</div>
-            <div class="activity-name">${game.name}</div>
-            ${game.details ? `<div class="activity-sub">${game.details}</div>` : ''}
-            ${game.state ? `<div class="activity-sub">${game.state}</div>` : ''}
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
+  await renderGameActivities(activities);
 
   const localPlayer = document.getElementById('localPlayer');
   const spotifyEl = document.getElementById('spotifyActivity');
@@ -320,14 +387,14 @@ function connectLanyard() {
   const ws = new WebSocket('wss://api.lanyard.rest/socket');
   let heartbeat;
 
-  ws.addEventListener('message', (e) => {
+  ws.addEventListener('message', async (e) => {
     const msg = JSON.parse(e.data);
     if (msg.op === 1) {
       ws.send(JSON.stringify({ op: 2, d: { subscribe_to_id: DISCORD_ID } }));
       heartbeat = setInterval(() => ws.send(JSON.stringify({ op: 3 })), msg.d.heartbeat_interval);
     }
     if (msg.op === 0 && (msg.t === 'INIT_STATE' || msg.t === 'PRESENCE_UPDATE')) {
-      updateProfile(msg.d);
+      await updateProfile(msg.d);
     }
   });
 
