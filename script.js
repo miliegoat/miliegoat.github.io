@@ -23,6 +23,7 @@ let lyricsOpen = false;
 let lyricsWasOpen = false;
 let currentTrackId = null;
 let currentSpotifyData = null;
+let gameActivityInterval = null;
 const appIconCache = new Map();
 
 function fmtMs(ms) {
@@ -89,15 +90,35 @@ function resolveActivityImage(game) {
     : null;
 }
 
+function updateGameElapsed() {
+  document.querySelectorAll('.activity-sub.activity-elapsed').forEach(el => {
+    const start = Number(el.dataset.start);
+    if (!start) return;
+    el.textContent = `played ${fmtDuration(Date.now() - start)}`;
+  });
+}
+
+function startGameActivityTimer(activities) {
+  clearInterval(gameActivityInterval);
+  const hasElapsed = activities.some(game => Boolean(game.timestamps?.start));
+  if (!hasElapsed) return;
+  updateGameElapsed();
+  gameActivityInterval = setInterval(updateGameElapsed, 1000);
+}
+
 async function renderGameActivities(activities) {
-  const cards = await Promise.all(activities.filter(a => a.type === 0).map(async game => {
+  const cards = await Promise.all(activities.filter((a, index) => a.type === 0).map(async (game, index) => {
     let iconUrl = resolveActivityImage(game);
     if (!iconUrl && game.application_id) {
       iconUrl = await getApplicationIcon(game.application_id);
     }
     const elapsed = game.timestamps?.start ? fmtDuration(Date.now() - game.timestamps.start) : null;
+    const elapsedHtml = game.timestamps?.start
+      ? `<div class="activity-sub activity-elapsed" data-start="${game.timestamps.start}">played ${elapsed}</div>`
+      : '';
+    const activityId = game.id || game.application_id || `game-${index}`;
     return `
-      <div class="discord-activity">
+      <div class="discord-activity" data-activity-id="${activityId}">
         <div class="activity-inner">
           ${iconUrl
             ? `<img src="${iconUrl}" class="activity-art" loading="lazy" onerror="this.outerHTML='<div class=&quot;activity-art-placeholder&quot;>🎮</div>'"/>`
@@ -107,13 +128,14 @@ async function renderGameActivities(activities) {
             <div class="activity-name">${game.name}</div>
             ${game.details ? `<div class="activity-sub">${game.details}</div>` : ''}
             ${game.state ? `<div class="activity-sub">${game.state}</div>` : ''}
-            ${elapsed ? `<div class="activity-sub">played ${elapsed}</div>` : ''}
+            ${elapsedHtml}
           </div>
         </div>
       </div>
     `;
   }));
   document.getElementById('gameActivities').innerHTML = cards.join('');
+  startGameActivityTimer(activities);
 }
 
 async function updateProfile(data) {
