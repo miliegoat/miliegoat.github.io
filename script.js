@@ -52,7 +52,7 @@ async function getApplicationIcon(applicationId) {
     const data = await res.json();
     const iconHash = data.icon;
     const iconUrl = iconHash
-      ? `https://cdn.discordapp.com/app-icons/${applicationId}/${iconHash}.png?size=64`
+      ? `https://cdn.discordapp.com/app-icons/${applicationId}/${iconHash}.png?size=512`
       : null;
     appIconCache.set(applicationId, iconUrl);
     return iconUrl;
