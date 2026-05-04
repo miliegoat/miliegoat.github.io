@@ -494,6 +494,28 @@ async function initGuestbook() {
     toggle.textContent = guestbookOpen ? 'close' : 'guestbook';
   };
 
+  const hint = document.getElementById('guestbookScrollHint');
+  let hintTimeout = null;
+
+  const showScrollHint = () => {
+    if (!hint || window.innerWidth >= 1040) return;
+    clearTimeout(hintTimeout);
+    hint.classList.remove('hiding');
+    hint.classList.add('visible');
+    hintTimeout = setTimeout(hideScrollHint, 3500);
+  };
+
+  const hideScrollHint = () => {
+    if (!hint) return;
+    clearTimeout(hintTimeout);
+    hint.classList.remove('visible');
+    hint.classList.remove('hiding');
+  };
+
+  window.addEventListener('scroll', () => {
+    if (hint && hint.classList.contains('visible') && !hint.classList.contains('hiding')) hideScrollHint();
+  }, { passive: true });
+
   const openGuestbook = () => {
     if (!card || !layout) return;
     card.classList.remove('guestbook-hidden');
@@ -509,10 +531,12 @@ async function initGuestbook() {
     guestbookOpen = true;
     updateToggle();
     fetchGuestbookEntries();
+    showScrollHint();
   };
 
   const closeGuestbook = () => {
     if (!card) return;
+    hideScrollHint();
     card.classList.add('guestbook-collapsed');
     guestbookOpen = false;
     updateToggle();
