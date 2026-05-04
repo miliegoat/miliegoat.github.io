@@ -151,6 +151,13 @@ async function updateProfile(data) {
   const customStatus = activities.find(a => a.type === 4);
   const customStatusText = customStatus ? (customStatus.state || customStatus.emoji?.name || '') : '';
 
+  const statusIcons = {
+    online: '<svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#31a24c"/></svg>',
+    idle: '<svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#faa61a"/><circle cx="8" cy="8" r="6" fill="#0a0a0a"/></svg>',
+    dnd: '<svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#ed4245"/><rect x="7" y="11" width="10" height="2" fill="black"/></svg>',
+    offline: '<svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="#747f8d" stroke-width="5"/></svg>'
+  };
+
   document.getElementById('discordProfile').innerHTML = `
     <div class="avatar-wrap">
       <img
@@ -160,7 +167,7 @@ async function updateProfile(data) {
         loading="lazy"
       />
       <div class="avatar-placeholder" style="display:none;">🐹</div>
-      <div class="status-dot" style="background:${statusColor};" title="${statusLabel}"></div>
+      <div class="status-icon" title="${statusLabel}">${statusIcons[discord_status] || statusIcons.offline}</div>
     </div>
     <div class="profile-info">
       <div class="profile-name">${displayName}</div>
@@ -484,16 +491,47 @@ async function initGuestbook() {
 
   const updateToggle = () => {
     if (!toggle || !card || !layout) return;
-    guestbookOpen = !card.classList.contains('guestbook-hidden');
     toggle.textContent = guestbookOpen ? 'close' : 'guestbook';
-    layout.classList.toggle('guestbook-active', guestbookOpen);
+  };
+
+  const openGuestbook = () => {
+    if (!card || !layout) return;
+    card.classList.remove('guestbook-hidden');
+    card.classList.add('guestbook-collapsed');
+    void card.offsetHeight;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        layout.style.transition = 'max-width 480ms cubic-bezier(0.16, 1, 0.3, 1)';
+        layout.classList.add('guestbook-active');
+        card.classList.remove('guestbook-collapsed');
+      });
+    });
+    guestbookOpen = true;
+    updateToggle();
+    fetchGuestbookEntries();
+  };
+
+  const closeGuestbook = () => {
+    if (!card) return;
+    card.classList.add('guestbook-collapsed');
+    guestbookOpen = false;
+    updateToggle();
+    layout.style.transition = 'max-width 280ms cubic-bezier(0.4, 0, 1, 1)';
+    layout.classList.remove('guestbook-active');
+    setTimeout(() => {
+      card.classList.add('guestbook-hidden');
+      card.classList.remove('guestbook-collapsed');
+      layout.style.transition = '';
+    }, 300);
   };
 
   if (toggle && card) {
     toggle.addEventListener('click', () => {
-      card.classList.toggle('guestbook-hidden');
-      updateToggle();
-      if (guestbookOpen) fetchGuestbookEntries();
+      if (guestbookOpen) {
+        closeGuestbook();
+      } else {
+        openGuestbook();
+      }
     });
     updateToggle();
   }
@@ -648,29 +686,49 @@ function resize() {
 resize();
 window.addEventListener('resize', resize);
 
-const flakes = Array.from({ length: 80 }, () => ({
-  x: Math.random() * window.innerWidth,
-  y: Math.random() * window.innerHeight,
-  r: Math.random() * 2.5 + 0.5,
-  speed: Math.random() * 0.6 + 0.2,
-  drift: (Math.random() - 0.5) * 0.3,
-  opacity: Math.random() * 0.5 + 0.15,
-  wobble: Math.random() * Math.PI * 2,
-  wobbleSpeed: Math.random() * 0.01 + 0.003,
-}));
+const snowLayers = [
+  { count: 25, minR: 1.2, maxR: 2.8, minSpeed: 0.4, maxSpeed: 0.9, minOpacity: 0.25, maxOpacity: 0.5, drift: 0.35 },
+  { count: 40, minR: 0.6, maxR: 1.4, minSpeed: 0.25, maxSpeed: 0.55, minOpacity: 0.12, maxOpacity: 0.28, drift: 0.25 },
+  { count: 50, minR: 0.3, maxR: 0.7, minSpeed: 0.15, maxSpeed: 0.35, minOpacity: 0.06, maxOpacity: 0.15, drift: 0.18 },
+];
 
+const flakes = snowLayers.flatMap(layer =>
+  Array.from({ length: layer.count }, () => ({
+    x: Math.random() * window.innerWidth,
+    y: Math.random() * window.innerHeight,
+    r: Math.random() * (layer.maxR - layer.minR) + layer.minR,
+    speed: Math.random() * (layer.maxSpeed - layer.minSpeed) + layer.minSpeed,
+    drift: (Math.random() - 0.5) * layer.drift,
+    opacity: Math.random() * (layer.maxOpacity - layer.minOpacity) + layer.minOpacity,
+    wobble: Math.random() * Math.PI * 2,
+    wobbleSpeed: Math.random() * 0.008 + 0.002,
+    layer: layer,
+  }))
+);
+
+let snowTime = 0;
 function drawFlakes() {
+  snowTime += 0.01;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = 'rgba(255,255,255,0.5)';
-  for (const f of flakes) {
+  
+  const sortedFlakes = [...flakes].sort((a, b) => a.r - b.r);
+  
+  for (const f of sortedFlakes) {
     ctx.globalAlpha = f.opacity;
+    ctx.fillStyle = '#fff';
     ctx.beginPath();
     ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
     ctx.fill();
+    
     f.wobble += f.wobbleSpeed;
-    f.x += f.drift + Math.sin(f.wobble) * 0.3;
+    const wind = Math.sin(snowTime + f.y * 0.002) * 0.15;
+    f.x += f.drift + wind + Math.sin(f.wobble) * 0.2;
     f.y += f.speed;
-    if (f.y > canvas.height + 5) { f.y = -5; f.x = Math.random() * canvas.width; }
+    
+    if (f.y > canvas.height + 10) {
+      f.y = -10;
+      f.x = Math.random() * canvas.width;
+    }
     if (f.x > canvas.width + 5) f.x = -5;
     if (f.x < -5) f.x = canvas.width + 5;
   }
@@ -682,17 +740,67 @@ drawFlakes();
 const layer1 = document.getElementById('layer1');
 const layer2 = document.getElementById('layer2');
 let targetX = 0, targetY = 0, currentX = 0, currentY = 0;
+let rafId = null;
+
+function animateParallax() {
+  const ease = 0.035;
+  const dx = targetX - currentX;
+  const dy = targetY - currentY;
+  
+  currentX += dx * ease;
+  currentY += dy * ease;
+  
+  if (Math.abs(dx) > 0.01 || Math.abs(dy) > 0.01) {
+    layer1.style.transform = `translate(${currentX * 22}px, ${currentY * 14}px)`;
+    layer2.style.transform = `translate(${currentX * -12}px, ${currentY * -8}px)`;
+  }
+  
+  rafId = requestAnimationFrame(animateParallax);
+}
 
 window.addEventListener('mousemove', (e) => {
   targetX = (e.clientX / window.innerWidth - 0.5) * 2;
   targetY = (e.clientY / window.innerHeight - 0.5) * 2;
 });
 
-function animateParallax() {
-  currentX += (targetX - currentX) * 0.04;
-  currentY += (targetY - currentY) * 0.04;
-  layer1.style.transform = `translate(${currentX * 18}px, ${currentY * 12}px)`;
-  layer2.style.transform = `translate(${currentX * -10}px, ${currentY * -7}px)`;
-  requestAnimationFrame(animateParallax);
-}
+document.addEventListener('mouseleave', () => {
+  targetX = 0;
+  targetY = 0;
+});
+
 animateParallax();
+
+const playBtn = document.getElementById('playBtn');
+const muteBtn = document.getElementById('muteBtn');
+const volSlider = document.getElementById('volSlider');
+const playIcon = document.getElementById('playIcon');
+const volIcon = document.getElementById('volIcon');
+
+if (audio && playBtn) {
+  playBtn.addEventListener('click', () => {
+    if (audio.paused) {
+      audio.play();
+      playIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+    } else {
+      audio.pause();
+      playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+    }
+  });
+
+  audio.addEventListener('ended', () => {
+    playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+  });
+}
+
+if (audio && muteBtn && volSlider) {
+  muteBtn.addEventListener('click', () => {
+    audio.muted = !audio.muted;
+    volIcon.innerHTML = audio.muted
+      ? '<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>'
+      : '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>';
+  });
+
+  volSlider.addEventListener('input', (e) => {
+    audio.volume = e.target.value;
+  });
+}
