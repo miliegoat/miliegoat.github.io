@@ -216,7 +216,7 @@ async function searchAndPlayYouTube(spotify) {
   const videoId = await searchYouTube(spotify);
   if (!videoId) { updatePlayAlongBtn('error'); return; }
 
-  const seekSec = spotify.timestamps ? (Date.now() - spotify.timestamps.start) / 1000 + 1.5 : 0;
+  const seekSec = spotify.timestamps ? (Date.now() - spotify.timestamps.start) / 1000 + 1 : 0;
 
   if (ytUnlocked) {
     createYTPlayer(videoId, seekSec);
