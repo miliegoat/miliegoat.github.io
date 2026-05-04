@@ -424,6 +424,173 @@ body {
   background: #242424;
 }
 
+
+.guestbook-card {
+  background: #1f1f1f;
+  border: 1px solid #272727;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 18px;
+  overflow: hidden;
+  max-height: 2000px;
+  opacity: 1;
+  transition: max-height 280ms ease, opacity 280ms ease, margin-bottom 280ms ease, padding 280ms ease;
+}
+
+.guestbook-side-panel {
+  background: #1f1f1f;
+  border: 1px solid #272727;
+  border-radius: 20px;
+  padding: 16px;
+  width: 320px;
+  min-width: 320px;
+  max-width: 320px;
+  max-height: 1200px;
+  overflow: hidden;
+  opacity: 1;
+  transition: max-height 260ms ease, width 260ms ease, min-width 260ms ease, opacity 260ms ease, margin 260ms ease, padding 260ms ease;
+}
+
+.guestbook-panel-title {
+font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 14px;
+      margin-top: 4px;
+      letter-spacing: -0.5px;
+      font-variant-numeric: tabular-nums;
+  }
+
+.guestbook-hidden {
+  max-height: 0;
+  width: 0;
+  min-width: 0;
+  opacity: 0;
+  padding: 0;
+  margin: 0 !important;
+  border: none;
+}
+
+.guestbook-toggle {
+  background: none;
+  border: 1px solid #2e2e2e;
+  border-radius: 999px;
+  padding: 8px 14px;
+  color: #e07830;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 14px;
+  transition: all 0.2s ease;
+}
+
+.guestbook-toggle:hover {
+  background: rgba(224, 120, 48, 0.08);
+  border-color: rgba(224, 120, 48, 0.4);
+}
+
+.guestbook-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.guestbook-form label {
+  color: #bbb;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.guestbook-form input,
+.guestbook-form textarea {
+  background: #161616;
+  border: 1px solid #2e2e2e;
+  border-radius: 12px;
+  color: #eee;
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  resize: vertical;
+}
+
+.guestbook-form input:focus,
+.guestbook-form textarea:focus {
+  outline: none;
+  border-color: rgba(224, 120, 48, 0.6);
+}
+
+.guestbook-submit {
+  width: fit-content;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid #2e2e2e;
+  background: #1f1f1f;
+  color: #e07830;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.guestbook-submit:hover {
+  background: rgba(224, 120, 48, 0.08);
+  border-color: rgba(224, 120, 48, 0.4);
+}
+
+.guestbook-status {
+  font-size: 12px;
+  color: #777;
+  margin-bottom: 12px;
+}
+
+.guestbook-entries {
+  display: grid;
+  gap: 12px;
+}
+
+.guestbook-entry {
+  background: #161616;
+  border: 1px solid #2e2e2e;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.guestbook-entry-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.guestbook-entry-body {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #ccc;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.guestbook-entry-body {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #ccc;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin-bottom: 10px;
+}
+
+.guestbook-entry-meta {
+  font-size: 11px;
+  color: #666;
+}
+
+.guestbook-empty {
+  font-size: 13px;
+  color: #777;
+  font-style: italic;
+}
+
 .activity-inner {
   display: flex;
   align-items: center;
@@ -564,6 +731,12 @@ a.activity-name:hover { color: #e07830; }
     .lyrics-layout.spotify-active {
       max-width: 992px;
     }
+    .lyrics-layout.guestbook-active {
+      max-width: 1020px;
+    }
+    .lyrics-layout.spotify-active.guestbook-active {
+      max-width: 1380px;
+    }
 
     .lyrics-side-panel {
       width: 476px;
@@ -586,13 +759,26 @@ a.activity-name:hover { color: #e07830; }
       .lyrics-layout {
         flex-direction: column;
         align-items: center;
-        max-width: 500px !important;
         transition: none;
         width: 100%;
       }
-      .lyrics-side-panel {
+      .lyrics-layout .card {
+        margin-right: 0;
+      }
+      .lyrics-side-panel,
+      .guestbook-side-panel {
         width: 100%;
         max-width: 500px;
+        min-width: 0;
+      }
+      .guestbook-side-panel {
+        order: 2;
+      }
+      .guestbook-hidden {
+        width: 0;
+        min-width: 0;
+      }
+      .lyrics-side-panel {
         height: 400px;
       }
     }

@@ -17,10 +17,15 @@ const DISCORD_ID = '1125787079654260777';
 const STATUS_COLORS = { online: '#4ade80', idle: '#facc15', dnd: '#f87171', offline: '#6b7280' };
 const STATUS_LABELS = { online: 'online', idle: 'idle', dnd: 'do not disturb', offline: 'offline' };
 
+const SUPABASE_URL = 'https://spcpbasronstvapzkhki.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_ZhCkRte0RhrR3fJm9BvqXA_27TOaY2u';
+const SUPABASE_TABLE = 'guestbook';
+
 let spotifyProgressInterval = null;
 let currentLyrics = [];
 let lyricsOpen = false;
 let lyricsWasOpen = false;
+let guestbookOpen = false;
 let currentTrackId = null;
 let currentSpotifyData = null;
 let gameActivityInterval = null;
@@ -40,6 +45,12 @@ function fmtDuration(ms) {
     return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
   }
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
+}
+
+function formatTimestamp(timestamp) {
+  if (!timestamp) return '';
+  const date = new Date(timestamp);
+  return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 }
 
 async function getApplicationIcon(applicationId) {
@@ -405,6 +416,154 @@ function toggleLyrics() {
   }
 }
 
+function escapeHtml(value) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function renderGuestbookEntries(entries) {
+  const container = document.getElementById('guestbookEntries');
+  const status = document.getElementById('guestbookStatus');
+  if (!container || !status) return;
+
+  if (!entries.length) {
+    status.textContent = 'no guestbook entries yet — be the first!';
+    container.innerHTML = '<div class="guestbook-empty">No public messages yet. Submit one with the form above.</div>';
+    return;
+  }
+
+  const sortedEntries = [...entries].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  status.textContent = `${sortedEntries.length} saved message${sortedEntries.length === 1 ? '' : 's'}`;
+  container.innerHTML = sortedEntries.map(entry => {
+    return `<div class="guestbook-entry">
+      <div class="guestbook-entry-title">${escapeHtml(entry.name || 'anonymous')}</div>
+      <div class="guestbook-entry-body">${escapeHtml(entry.message || '')}</div>
+      <div class="guestbook-entry-meta">${formatTimestamp(entry.created_at)}</div>
+    </div>`;
+  }).join('');
+}
+
+let supabaseClient = null;
+
+function hasSupabaseConfig() {
+  return SUPABASE_URL && !SUPABASE_URL.includes('YOUR_') && SUPABASE_ANON_KEY && !SUPABASE_ANON_KEY.includes('YOUR_');
+}
+
+async function createSupabaseClient() {
+  if (!hasSupabaseConfig()) return null;
+  if (supabaseClient) return supabaseClient;
+
+  if (window.supabase && typeof window.supabase.createClient === 'function') {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    return supabaseClient;
+  }
+
+  console.error('supabase client unavailable: window.supabase is not defined');
+  return null;
+}
+
+async function fetchGuestbookEntries() {
+  const status = document.getElementById('guestbookStatus');
+  if (status) status.textContent = 'loading guestbook entries…';
+
+  if (!hasSupabaseConfig()) {
+    if (status) status.textContent = 'guestbook not configured yet. fill in your Supabase keys in script.js';
+    document.getElementById('guestbookEntries').innerHTML = '<div class="guestbook-empty">Guestbook is disabled until Supabase is configured.</div>';
+    return;
+  }
+
+  const supabase = await createSupabaseClient();
+  if (!supabase) {
+    if (status) status.textContent = 'unable to initialize guestbook client';
+    return;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from(SUPABASE_TABLE)
+      .select('name,message,created_at')
+      .order('created_at', { ascending: false })
+      .limit(25);
+
+    if (error) throw error;
+    renderGuestbookEntries(data || []);
+  } catch (err) {
+    if (status) status.textContent = 'could not load guestbook entries';
+    document.getElementById('guestbookEntries').innerHTML = '<div class="guestbook-empty">External guestbook is unavailable right now.</div>';
+    console.error('guestbook load failed', err);
+  }
+}
+
+async function initGuestbook() {
+  const form = document.getElementById('guestbookForm');
+  const toggle = document.getElementById('guestbookToggle');
+  const card = document.getElementById('guestbookCard');
+  const layout = document.getElementById('lyricsLayout');
+
+  const updateToggle = () => {
+    if (!toggle || !card || !layout) return;
+    guestbookOpen = !card.classList.contains('guestbook-hidden');
+    toggle.textContent = guestbookOpen ? 'hide guestbook' : 'show guestbook';
+    layout.classList.toggle('guestbook-active', guestbookOpen);
+  };
+
+  if (toggle && card) {
+    toggle.addEventListener('click', () => {
+      card.classList.toggle('guestbook-hidden');
+      updateToggle();
+      if (guestbookOpen) fetchGuestbookEntries();
+    });
+    updateToggle();
+  }
+
+  if (!form) return;
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const nameInput = document.getElementById('guestName');
+    const messageInput = document.getElementById('guestMessage');
+    const name = nameInput?.value.trim() || 'anonymous';
+    const message = messageInput?.value.trim();
+    const status = document.getElementById('guestbookStatus');
+
+    if (!message) {
+      if (status) status.textContent = 'please enter a message before submitting';
+      return;
+    }
+
+    if (!hasSupabaseConfig()) {
+      if (status) status.textContent = 'guestbook not configured yet. fill in your Supabase keys in script.js';
+      return;
+    }
+
+    const supabase = await createSupabaseClient();
+    if (!supabase) {
+      if (status) status.textContent = 'unable to initialize guestbook client';
+      return;
+    }
+
+    if (status) status.textContent = 'saving your message…';
+
+    try {
+      const { error } = await supabase.from(SUPABASE_TABLE).insert([{ name, message }]);
+      if (error) throw error;
+      if (status) status.textContent = 'message saved! refreshing entries…';
+      if (nameInput) nameInput.value = '';
+      if (messageInput) messageInput.value = '';
+      fetchGuestbookEntries();
+    } catch (err) {
+      if (status) status.textContent = 'could not save your message';
+      console.error('guestbook submit failed', err);
+    }
+  });
+
+  fetchGuestbookEntries();
+}
+
 function connectLanyard() {
   const ws = new WebSocket('wss://api.lanyard.rest/socket');
   let heartbeat;
@@ -429,6 +588,7 @@ function connectLanyard() {
 }
 
 connectLanyard();
+initGuestbook();
 
 const audio = document.getElementById('audio');
 let playing = false;
