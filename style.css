@@ -426,8 +426,8 @@ body {
 
 
 .guestbook-card {
-  background: #1f1f1f;
-  border: 1px solid #272727;
+  background: #161616;
+  border: 1px solid #252525;
   border-radius: 14px;
   padding: 16px;
   margin-bottom: 18px;
@@ -438,8 +438,8 @@ body {
 }
 
 .guestbook-side-panel {
-  background: #1f1f1f;
-  border: 1px solid #272727;
+  background: #161616;
+  border: 1px solid #252525;
   border-radius: 20px;
   padding: 16px;
   width: 320px;
