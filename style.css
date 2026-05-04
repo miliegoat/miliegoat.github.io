@@ -71,8 +71,6 @@ body {
   color: #e07830;
   transition: filter 300ms cubic-bezier(0.16, 1, 0.3, 1);
 }
-.views:hover svg {
-}
 
 .guestbook-toggle-compact {
   background: #1f1f1f;
@@ -115,9 +113,6 @@ body {
   text-decoration-color: #e07830;
   text-underline-offset: 4px;
   transition: text-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.card:hover .name span {
 }
 
 .bio {
@@ -1067,27 +1062,72 @@ a.activity-name:hover { color: #e07830; }
     border-radius: 16px;
   }
 }
-/* six seven */
-/* six seven */
-/* six seven */
-/* six seven */
-/* six seven */
-/* six seven */
-/* six seven */
-/* six seven */
-/* six seven */
-/* six seven */
-/* six seven */
-/* six seven */
-/* six seven */
-/* six seven */
-/* six seven */
-/* six seven */
-/* six seven */
-/* six seven */
-/* six seven */
-/* six seven */
-/* six seven */
-/* six seven */
-/* six seven */
-/* six seven */
+
+.guestbook-scroll-hint {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  pointer-events: none;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 24px;
+}
+
+.guestbook-scroll-hint.visible {
+  display: flex;
+  animation: hint-fadein 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.guestbook-scroll-hint.hiding {
+  display: flex;
+  animation: hint-fadeout 0.35s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.guestbook-scroll-hint::before {
+  content: '';
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(to top, rgba(224, 120, 48, 0.18) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.guestbook-scroll-hint-inner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(30, 20, 10, 0.85);
+  border: 1px solid rgba(224, 120, 48, 0.45);
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #e07830;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 24px rgba(224, 120, 48, 0.25), 0 4px 16px rgba(0,0,0,0.4);
+  animation: hint-bounce 1.4s ease-in-out infinite;
+}
+
+@keyframes hint-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(5px); }
+}
+
+@keyframes hint-fadein {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes hint-fadeout {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@media (min-width: 1040px) {
+  .guestbook-scroll-hint { display: none !important; }
+}
