@@ -1,13 +1,13 @@
 (async function() {
   try {
-    const alreadyCounted = sessionStorage.getItem('mil_counted');
-    const url = alreadyCounted
+    const counted = sessionStorage.getItem('mil_counted');
+    const url = counted
       ? 'https://api.counterapi.dev/v2/miliegoat/viewsmiliegoat'
       : 'https://api.counterapi.dev/v2/miliegoat/viewsmiliegoat/up';
     const res = await fetch(url);
     const data = await res.json();
     document.getElementById('viewCount').textContent = Number(data.data.up_count).toLocaleString();
-    if (!alreadyCounted) sessionStorage.setItem('mil_counted', '1');
+    if (!counted) sessionStorage.setItem('mil_counted', '1');
   } catch {
     document.getElementById('viewCount').textContent = '—';
   }
@@ -37,38 +37,33 @@ function fmtMs(ms) {
 }
 
 function fmtDuration(ms) {
-  const totalSeconds = Math.floor(ms / 1000);
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-  if (hours > 0) {
-    return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-  }
-  return `${minutes}:${String(seconds).padStart(2, '0')}`;
+  const total = Math.floor(ms / 1000);
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-function formatTimestamp(timestamp) {
-  if (!timestamp) return '';
-  const date = new Date(timestamp);
-  return date.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+function formatTimestamp(ts) {
+  if (!ts) return '';
+  return new Date(ts).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 }
 
-async function getApplicationIcon(applicationId) {
-  if (!applicationId) return null;
-  if (appIconCache.has(applicationId)) return appIconCache.get(applicationId);
-
+async function getApplicationIcon(appId) {
+  if (!appId) return null;
+  if (appIconCache.has(appId)) return appIconCache.get(appId);
   try {
-    const res = await fetch(`https://discord.com/api/v10/applications/${applicationId}/rpc`);
-    if (!res.ok) throw new Error('app metadata unavailable');
+    const res = await fetch(`https://discord.com/api/v10/applications/${appId}/rpc`);
+    if (!res.ok) throw new Error();
     const data = await res.json();
-    const iconHash = data.icon;
-    const iconUrl = iconHash
-      ? `https://cdn.discordapp.com/app-icons/${applicationId}/${iconHash}.png?size=512`
+    const url = data.icon
+      ? `https://cdn.discordapp.com/app-icons/${appId}/${data.icon}.png?size=512`
       : null;
-    appIconCache.set(applicationId, iconUrl);
-    return iconUrl;
+    appIconCache.set(appId, url);
+    return url;
   } catch {
-    appIconCache.set(applicationId, null);
+    appIconCache.set(appId, null);
     return null;
   }
 }
@@ -81,20 +76,14 @@ function resolveActivityImage(game) {
   if (image.startsWith('mp:external/')) {
     return `https://media.discordapp.net/${image.slice('mp:'.length)}?size=64`;
   }
-
   if (image.startsWith('mp:')) {
     const path = image.slice('mp:'.length);
-    if (path.startsWith('http://') || path.startsWith('https://')) {
-      return path;
-    }
+    if (path.startsWith('http://') || path.startsWith('https://')) return path;
     return game.application_id
       ? `https://cdn.discordapp.com/app-assets/${game.application_id}/${path}.png?size=64`
       : null;
   }
-
-  if (image.startsWith('https://') || image.startsWith('http://')) {
-    return image;
-  }
+  if (image.startsWith('https://') || image.startsWith('http://')) return image;
 
   return game.application_id
     ? `https://cdn.discordapp.com/app-assets/${game.application_id}/${image}.png?size=64`
@@ -104,47 +93,47 @@ function resolveActivityImage(game) {
 function updateGameElapsed() {
   document.querySelectorAll('.activity-sub.activity-elapsed').forEach(el => {
     const start = Number(el.dataset.start);
-    if (!start) return;
-    el.textContent = `played ${fmtDuration(Date.now() - start)}`;
+    if (start) el.textContent = `played ${fmtDuration(Date.now() - start)}`;
   });
 }
 
 function startGameActivityTimer(activities) {
   clearInterval(gameActivityInterval);
-  const hasElapsed = activities.some(game => Boolean(game.timestamps?.start));
-  if (!hasElapsed) return;
+  if (!activities.some(a => Boolean(a.timestamps?.start))) return;
   updateGameElapsed();
   gameActivityInterval = setInterval(updateGameElapsed, 1000);
 }
 
 async function renderGameActivities(activities) {
-  const cards = await Promise.all(activities.filter((a, index) => a.type === 0).map(async (game, index) => {
-    let iconUrl = resolveActivityImage(game);
-    if (!iconUrl && game.application_id) {
-      iconUrl = await getApplicationIcon(game.application_id);
-    }
-    const elapsed = game.timestamps?.start ? fmtDuration(Date.now() - game.timestamps.start) : null;
-    const elapsedHtml = game.timestamps?.start
-      ? `<div class="activity-sub activity-elapsed" data-start="${game.timestamps.start}">played ${elapsed}</div>`
-      : '';
-    const activityId = game.id || game.application_id || `game-${index}`;
-    return `
-      <div class="discord-activity" data-activity-id="${activityId}">
-        <div class="activity-inner">
-          ${iconUrl
-            ? `<img src="${iconUrl}" class="activity-art" loading="lazy" onerror="this.outerHTML='<div class=&quot;activity-art-placeholder&quot;>🎮</div>'"/>`
-            : `<div class="activity-art-placeholder">🎮</div>`}
-          <div class="activity-info">
-            <div class="activity-type">playing</div>
-            <div class="activity-name">${game.name}</div>
-            ${game.details ? `<div class="activity-sub">${game.details}</div>` : ''}
-            ${game.state ? `<div class="activity-sub">${game.state}</div>` : ''}
-            ${elapsedHtml}
+  const cards = await Promise.all(
+    activities.filter(a => a.type === 0).map(async (game, index) => {
+      let iconUrl = resolveActivityImage(game);
+      if (!iconUrl && game.application_id) iconUrl = await getApplicationIcon(game.application_id);
+
+      const elapsed = game.timestamps?.start ? fmtDuration(Date.now() - game.timestamps.start) : null;
+      const elapsedHtml = game.timestamps?.start
+        ? `<div class="activity-sub activity-elapsed" data-start="${game.timestamps.start}">played ${elapsed}</div>`
+        : '';
+      const activityId = game.id || game.application_id || `game-${index}`;
+
+      return `
+        <div class="discord-activity" data-activity-id="${activityId}">
+          <div class="activity-inner">
+            ${iconUrl
+              ? `<img src="${iconUrl}" class="activity-art" loading="lazy" onerror="this.outerHTML='<div class=&quot;activity-art-placeholder&quot;>🎮</div>'"/>`
+              : `<div class="activity-art-placeholder">🎮</div>`}
+            <div class="activity-info">
+              <div class="activity-type">playing</div>
+              <div class="activity-name">${game.name}</div>
+              ${game.details ? `<div class="activity-sub">${game.details}</div>` : ''}
+              ${game.state ? `<div class="activity-sub">${game.state}</div>` : ''}
+              ${elapsedHtml}
+            </div>
           </div>
         </div>
-      </div>
-    `;
-  }));
+      `;
+    })
+  );
   document.getElementById('gameActivities').innerHTML = cards.join('');
   startGameActivityTimer(activities);
 }
@@ -182,7 +171,6 @@ async function updateProfile(data) {
   `;
 
   clearInterval(spotifyProgressInterval);
-
   await renderGameActivities(activities);
 
   const localPlayer = document.getElementById('localPlayer');
@@ -221,8 +209,6 @@ async function updateProfile(data) {
       </div>
     `;
 
-    // Lyrics panel is always open when Spotify is active
-
     if (duration > 0) {
       const start = spotify.timestamps.start;
       const tick = () => {
@@ -245,7 +231,6 @@ async function updateProfile(data) {
       fetchLyrics(spotify);
     }
 
-    // Always open lyrics panel when listening to Spotify
     lyricsOpen = true;
     lyricsWasOpen = true;
     document.getElementById('lyricsLayout').classList.add('spotify-active');
@@ -269,8 +254,9 @@ async function updateProfile(data) {
 async function fetchLyrics(spotify) {
   const content = document.getElementById('lyricsContent');
   try {
-    const artistFirst = spotify.artist.split(';')[0].trim();
-    const url = `https://lrclib.net/api/get?artist_name=${encodeURIComponent(artistFirst)}&track_name=${encodeURIComponent(spotify.song)}&duration=${Math.round((spotify.timestamps.end - spotify.timestamps.start) / 1000)}`;
+    const artist = spotify.artist.split(';')[0].trim();
+    const duration = Math.round((spotify.timestamps.end - spotify.timestamps.start) / 1000);
+    const url = `https://lrclib.net/api/get?artist_name=${encodeURIComponent(artist)}&track_name=${encodeURIComponent(spotify.song)}&duration=${duration}`;
     const res = await fetch(url);
     const data = await res.json();
 
@@ -328,6 +314,7 @@ function highlightLyric(elapsedMs) {
 function openLyricsPanel() {
   let panel = document.getElementById('lyricsPanel');
   const layout = document.getElementById('lyricsLayout');
+
   if (panel) {
     panel.style.display = 'flex';
     updateLyricsPanel();
@@ -354,31 +341,25 @@ function openLyricsPanel() {
   `;
 
   layout.appendChild(panel);
-  panel.getBoundingClientRect(); // flush so initial state is painted
+  panel.getBoundingClientRect();
 
   panel.style.transition = 'opacity 480ms cubic-bezier(0.16, 1, 0.3, 1), transform 480ms cubic-bezier(0.34, 1.2, 0.64, 1)';
   panel.style.opacity = '1';
   panel.style.transform = 'translateX(0) scale(1)';
 
-  // Close button is removed — panel stays open while Spotify is active
-
   updateLyricsPanel();
 
   if (currentSpotifyData && currentLyrics.length) {
-    setTimeout(() => {
-      highlightLyric(Date.now() - currentSpotifyData.timestamps.start);
-    }, 150);
+    setTimeout(() => highlightLyric(Date.now() - currentSpotifyData.timestamps.start), 150);
   }
 }
 
 function closeLyricsPanel() {
   const panel = document.getElementById('lyricsPanel');
   if (!panel) return;
-
   panel.style.transition = 'opacity 380ms cubic-bezier(0.4, 0, 1, 1), transform 380ms cubic-bezier(0.4, 0, 0.2, 1)';
   panel.style.opacity = '0';
   panel.style.transform = 'translateX(20px) scale(0.98)';
-
   setTimeout(() => panel.remove(), 390);
 }
 
@@ -436,15 +417,15 @@ function renderGuestbookEntries(entries) {
     return;
   }
 
-  const sortedEntries = [...entries].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-  status.textContent = `${sortedEntries.length} saved message${sortedEntries.length === 1 ? '' : 's'}`;
-  container.innerHTML = sortedEntries.map(entry => {
-    return `<div class="guestbook-entry">
+  const sorted = [...entries].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  status.textContent = `${sorted.length} saved message${sorted.length === 1 ? '' : 's'}`;
+  container.innerHTML = sorted.map(entry => `
+    <div class="guestbook-entry">
       <div class="guestbook-entry-title">${escapeHtml(entry.name || 'anonymous')}</div>
       <div class="guestbook-entry-body">${escapeHtml(entry.message || '')}</div>
       <div class="guestbook-entry-meta">${formatTimestamp(entry.created_at)}</div>
-    </div>`;
-  }).join('');
+    </div>
+  `).join('');
 }
 
 let supabaseClient = null;
@@ -456,13 +437,11 @@ function hasSupabaseConfig() {
 async function createSupabaseClient() {
   if (!hasSupabaseConfig()) return null;
   if (supabaseClient) return supabaseClient;
-
-  if (window.supabase && typeof window.supabase.createClient === 'function') {
+  if (window.supabase?.createClient) {
     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     return supabaseClient;
   }
-
-  console.error('supabase client unavailable: window.supabase is not defined');
+  console.error('supabase client unavailable');
   return null;
 }
 
@@ -488,7 +467,6 @@ async function fetchGuestbookEntries() {
       .select('name,message,created_at')
       .order('created_at', { ascending: false })
       .limit(25);
-
     if (error) throw error;
     renderGuestbookEntries(data || []);
   } catch (err) {
@@ -507,7 +485,7 @@ async function initGuestbook() {
   const updateToggle = () => {
     if (!toggle || !card || !layout) return;
     guestbookOpen = !card.classList.contains('guestbook-hidden');
-    toggle.textContent = guestbookOpen ? 'hide guestbook' : 'show guestbook';
+    toggle.textContent = guestbookOpen ? 'close' : 'guestbook';
     layout.classList.toggle('guestbook-active', guestbookOpen);
   };
 
@@ -593,9 +571,12 @@ initGuestbook();
 const audio = document.getElementById('audio');
 let playing = false;
 
+function fmt(s) {
+  return Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+}
+
 function initSlider() {
-  const slider = document.getElementById('volSlider');
-  slider.style.background = `linear-gradient(to right, #e07830 100%, #2a2a2a 100%)`;
+  document.getElementById('volSlider').style.background = `linear-gradient(to right, #e07830 100%, #2a2a2a 100%)`;
   if (audio.duration) document.getElementById('durationEl').textContent = fmt(audio.duration);
 }
 initSlider();
@@ -610,11 +591,6 @@ function togglePlay() {
     document.getElementById('playIcon').innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
   }
   playing = !playing;
-}
-
-function fmt(s) {
-  const m = Math.floor(s / 60);
-  return m + ':' + String(Math.floor(s % 60)).padStart(2, '0');
 }
 
 audio.addEventListener('timeupdate', () => {
@@ -686,8 +662,7 @@ const flakes = Array.from({ length: 80 }, () => ({
 function drawFlakes() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = 'rgba(255,255,255,0.5)';
-  for (let i = 0; i < flakes.length; i++) {
-    const f = flakes[i];
+  for (const f of flakes) {
     ctx.globalAlpha = f.opacity;
     ctx.beginPath();
     ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
