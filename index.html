@@ -20,25 +20,37 @@
 <div class="lyrics-layout-outer">
 <div class="lyrics-layout" id="lyricsLayout">
   <div id="guestbookCard" class="guestbook-side-panel guestbook-hidden">
-    <div class="guestbook-panel-title">guestbook</div>
-    <form id="guestbookForm" class="guestbook-form">
-      <div class="guestbook-header-row">
-        <input id="guestName" class="guestbook-name" type="text" maxlength="30" placeholder="name" />
-        <button type="submit" class="guestbook-submit">post</button>
+    <div class="guestbook-titlebar">
+      <div class="guestbook-title-info">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="#e07830">
+          <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/>
+        </svg>
+        <span>guestbook</span>
       </div>
-      <textarea id="guestMessage" class="guestbook-message" rows="3" maxlength="280" placeholder="write something" required></textarea>
-    </form>
-    <div id="guestbookStatus" class="guestbook-status">loading guestbook entries…</div>
-    <div id="guestbookEntries" class="guestbook-entries"></div>
+    </div>
+    
+    <div class="guestbook-content">
+      <form id="guestbookForm" class="guestbook-form">
+        <div class="guestbook-header-row">
+          <input id="guestName" class="guestbook-name" type="text" maxlength="30" placeholder="name" />
+          <button type="submit" class="guestbook-submit">post</button>
+        </div>
+        <textarea id="guestMessage" class="guestbook-message" rows="3" maxlength="280" placeholder="write something nice" required></textarea>
+      </form>
+      <div id="guestbookStatus" class="guestbook-status">loading guestbook entries…</div>
+      <div id="guestbookEntries" class="guestbook-entries"></div>
+    </div>
   </div>
 
   <div class="card">
-
-    <div class="views">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5a5 5 0 110-10 5 5 0 010 10zm0-8a3 3 0 100 6 3 3 0 000-6z"/>
-      </svg>
-      <span id="viewCount">1</span>
+    <div class="card-top-right">
+      <button type="button" id="guestbookToggle" class="guestbook-toggle-compact">guestbook</button>
+      <div class="views">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5a5 5 0 110-10 5 5 0 010 10zm0-8a3 3 0 100 6 3 3 0 000-6z"/>
+        </svg>
+        <span id="viewCount">1</span>
+      </div>
     </div>
 
     <div class="name">m<span>ilie</span></div>
@@ -132,10 +144,6 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
       <img src="media/badge2.gif" alt="guinea pig"/>
       <img src="media/badge3.gif" alt="mozilla"/>
     </div>
-
-    <hr/>
-    <button type="button" id="guestbookToggle" class="guestbook-toggle">show guestbook</button>
-
   </div>
 </div>
 </div>
