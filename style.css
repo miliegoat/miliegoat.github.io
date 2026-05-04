@@ -751,7 +751,9 @@ a.activity-name:hover { color: #e07830; }
       transition: max-width 600ms cubic-bezier(0.16, 1, 0.3, 1);
       will-change: max-width;
     }
-
+.lyrics-layout.guestbook-active {
+  max-width: 1020px;
+}
     .lyrics-layout.spotify-active {
       max-width: 992px;
     }
@@ -794,6 +796,9 @@ a.activity-name:hover { color: #e07830; }
         width: 100%;
         max-width: 500px;
         min-width: 0;
+        align-self: center; /* Add this line to override flex-start */
+        order: 2;
+        height: 400px;
       }
       .guestbook-side-panel {
         order: 2;
