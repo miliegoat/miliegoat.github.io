@@ -33,7 +33,7 @@
       <form id="guestbookForm" class="guestbook-form">
         <div class="guestbook-header-row">
           <input id="guestName" class="guestbook-name" type="text" maxlength="30" placeholder="name" />
-          <button type="submit" class="guestbook-submit">post</button>
+          <button type="submit" id="guestbookSubmit" class="guestbook-submit">post</button>
         </div>
         <textarea id="guestMessage" class="guestbook-message" rows="3" maxlength="280" placeholder="write something nice" required></textarea>
       </form>
@@ -94,23 +94,23 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
             </a>
           </div>
           <div class="player-controls">
-            <button class="ctrl-btn" onclick="togglePlay()">
+            <button class="ctrl-btn" id="playBtn" title="play/pause">
               <svg id="playIcon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M8 5v14l11-7z"/>
               </svg>
             </button>
-            <button class="ctrl-btn" onclick="toggleMute()">
+            <button class="ctrl-btn" id="muteBtn" title="mute/unmute">
               <svg id="volIcon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
               </svg>
             </button>
-            <input class="vol-slider" id="volSlider" type="range" min="0" max="1" step="0.02" value="1" oninput="setVolume(this.value)"/>
+            <input class="vol-slider" id="volSlider" type="range" min="0" max="1" step="0.02" value="1"/>
           </div>
         </div>
       </div>
       <div class="progress-row">
         <span id="currentTime">0:00</span>
-        <div class="progress-bar" onclick="seek(event)">
+        <div class="progress-bar" id="progressBar">
           <div class="progress-fill" id="progressFill"></div>
         </div>
         <span id="durationEl">0:00</span>
@@ -137,24 +137,24 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
       <a href="https://github.com/miliegoat/miliegoat.github.io" target="_blank" class="tag accent">github.com/miliegoat/miliegoat.github.io</a>
     </div>
 
-    <hr/>
-    <div class="badges-row">
-      <img src="media/jesus_now.gif" alt="jesus now badge"/>
-      <img src="media/badge1.png" alt="arch"/>
-      <img src="media/badge2.gif" alt="guinea pig"/>
-      <img src="media/badge3.gif" alt="mozilla"/>
-    </div>
+     <hr/>
+     <div class="badges-row">
+       <img src="media/jesus_now.gif" alt="jesus now badge"/>
+       <img src="media/badge1.png" alt="arch"/>
+       <img src="media/badge2.gif" alt="guinea pig"/>
+       <img src="media/badge3.gif" alt="mozilla"/>
+     </div>
+     
+     <div class="footer-text">
+       <span>
+         <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+           <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+         </svg>
+         this site was self coded with html, css, js and love &lt;3
+       </span>
+     </div>
   </div>
 </div>
-</div>
-
-<div class="footer">
-  <span>
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-    </svg>
-    this site was self coded with html, css, js and love &lt;3
-  </span>
 </div>
 
 <audio id="audio" src="media/ohquesera.mp3" preload="metadata"></audio>
