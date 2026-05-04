@@ -39,8 +39,7 @@ body {
 .card-top-right {
   position: absolute;
   top: 24px;
-  left: 50%;
-  transform: translateX(-50%);
+  right: 24px;
   display: flex;
   flex-direction: row;
   align-items: center;
