@@ -31,6 +31,201 @@ let currentSpotifyData = null;
 let gameActivityInterval = null;
 const appIconCache = new Map();
 
+let ytPlayer = null;
+let ytReady = false;
+let ytPendingVideo = null;
+let ytCurrentVideoId = null;
+let ytUnlocked = false;
+let ytSearchCache = new Map();
+
+const YT_API_KEY = 'AIzaSyB4t18EPL0XTE7nqbu9OcHZnv4NiyvhsjE';
+
+function loadYouTubeAPI() {
+  if (document.getElementById('yt-api-script')) return;
+  const tag = document.createElement('script');
+  tag.id = 'yt-api-script';
+  tag.src = 'https://www.youtube.com/iframe_api';
+  document.head.appendChild(tag);
+}
+
+window.onYouTubeIframeAPIReady = function() {
+  ytReady = true;
+  if (ytPendingVideo && ytUnlocked) {
+    const { videoId, seekSec } = ytPendingVideo;
+    ytPendingVideo = null;
+    createYTPlayer(videoId, seekSec);
+  }
+};
+
+function createYTPlayer(videoId, seekSec) {
+  if (!ytReady) {
+    ytPendingVideo = { videoId, seekSec };
+    return;
+  }
+
+  let container = document.getElementById('yt-player-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'yt-player-container';
+    document.body.appendChild(container);
+  }
+
+  container.style.cssText = 'position:fixed;bottom:0;right:0;width:320px;height:180px;z-index:-1;opacity:0.01;pointer-events:none;';
+
+  if (ytPlayer) {
+    try { ytPlayer.destroy(); } catch {}
+    ytPlayer = null;
+  }
+
+  const div = document.createElement('div');
+  div.id = 'yt-iframe';
+  container.innerHTML = '';
+  container.appendChild(div);
+
+  ytCurrentVideoId = videoId;
+
+  ytPlayer = new YT.Player('yt-iframe', {
+    height: '180',
+    width: '320',
+    videoId,
+    playerVars: { autoplay: 1, controls: 0, disablekb: 1, fs: 0, rel: 0, start: Math.max(0, Math.floor(seekSec)) },
+    events: {
+      onReady(e) {
+        console.log('[YT] onReady fired');
+        e.target.setVolume(70);
+        e.target.seekTo(seekSec, true);
+        e.target.playVideo();
+      },
+      onStateChange(e) {
+        console.log('[YT] state:', e.data);
+        if (e.data === YT.PlayerState.PLAYING) {
+          updatePlayAlongBtn('playing');
+          container.style.cssText = 'position:fixed;width:1px;height:1px;top:-9999px;left:-9999px;pointer-events:none;opacity:0;';
+        }
+        if (e.data === YT.PlayerState.PAUSED) updatePlayAlongBtn('paused');
+      },
+      onError(e) {
+        console.log('[YT] error:', e.data);
+        updatePlayAlongBtn('error');
+      },
+    },
+  });
+}
+
+function destroyYTPlayer() {
+  if (ytPlayer) { try { ytPlayer.destroy(); } catch {} ytPlayer = null; }
+  ytCurrentVideoId = null;
+  ytPendingVideo = null;
+  const container = document.getElementById('yt-player-container');
+  if (container) container.remove();
+  updatePlayAlongBtn('idle');
+}
+
+function updatePlayAlongBtn(state) {
+  const btn = document.getElementById('playAlongBtn');
+  if (!btn) return;
+  const states = {
+    idle:    { text: '▶ play along', color: '#777', spin: false },
+    loading: { text: 'finding song…', color: '#777', spin: true },
+    playing: { text: '♫ playing', color: '#1db954', spin: false },
+    paused:  { text: '▶ play along', color: '#777', spin: false },
+    error:   { text: '✕ not found', color: '#f87171', spin: false },
+  };
+  const s = states[state] || states.idle;
+  btn.textContent = s.text;
+  btn.style.color = s.color;
+  btn.style.borderColor = state === 'playing' ? 'rgba(29,185,84,0.4)' : '';
+  btn.dataset.state = state;
+}
+
+function togglePlayAlong() {
+  const btn = document.getElementById('playAlongBtn');
+  if (!btn) return;
+  const state = btn.dataset.state || 'idle';
+
+  if (state === 'playing' && ytPlayer) {
+    ytPlayer.pauseVideo();
+    return;
+  }
+  if (state === 'paused' && ytPlayer) {
+    ytPlayer.playVideo();
+    updatePlayAlongBtn('playing');
+    return;
+  }
+
+  ytUnlocked = true;
+  updatePlayAlongBtn('loading');
+
+  if (ytPendingVideo) {
+    const { videoId, seekSec } = ytPendingVideo;
+    ytPendingVideo = null;
+    loadYouTubeAPI();
+    createYTPlayer(videoId, seekSec);
+  } else if (currentSpotifyData) {
+    searchYouTube(currentSpotifyData).then(videoId => {
+      if (!videoId) { updatePlayAlongBtn('error'); return; }
+      const seekSec = currentSpotifyData.timestamps ? (Date.now() - currentSpotifyData.timestamps.start) / 1000 + 1.5 : 0;
+      loadYouTubeAPI();
+      createYTPlayer(videoId, seekSec);
+    });
+  }
+}
+
+async function searchYouTube(spotify) {
+  const key = `${spotify.track_id}`;
+  if (ytSearchCache.has(key)) return ytSearchCache.get(key);
+
+  const artist = spotify.artist.split(';')[0].trim();
+  const queries = [
+    `${artist} - ${spotify.song} official audio`,
+    `${artist} ${spotify.song}`,
+    `${spotify.song} ${artist}`,
+  ];
+
+  for (const query of queries) {
+    try {
+      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=1&key=${YT_API_KEY}`;
+      console.log('[YT] searching:', query);
+      const res = await fetch(url, {
+        signal: AbortSignal.timeout(6000),
+        headers: { 'Referer': location.origin },
+      });
+      const data = await res.json();
+      console.log('[YT] response:', res.status, JSON.stringify(data).slice(0, 300));
+      if (!res.ok) continue;
+      const videoId = data.items?.[0]?.id?.videoId || null;
+      if (videoId) {
+        console.log('[YT] found:', videoId);
+        ytSearchCache.set(key, videoId);
+        return videoId;
+      }
+    } catch (e) {
+      console.log('[YT] fetch error:', e);
+      continue;
+    }
+  }
+  console.log('[YT] no results found');
+  return null;
+}
+
+window.togglePlayAlong = togglePlayAlong;
+
+async function searchAndPlayYouTube(spotify) {
+  loadYouTubeAPI();
+  updatePlayAlongBtn('loading');
+  const videoId = await searchYouTube(spotify);
+  if (!videoId) { updatePlayAlongBtn('error'); return; }
+
+  const seekSec = spotify.timestamps ? (Date.now() - spotify.timestamps.start) / 1000 + 1.5 : 0;
+
+  if (ytUnlocked) {
+    createYTPlayer(videoId, seekSec);
+  } else {
+    ytPendingVideo = { videoId, seekSec };
+    updatePlayAlongBtn('idle');
+  }
+}
+
 function fmtMs(ms) {
   const s = Math.floor(ms / 1000);
   return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
@@ -201,6 +396,7 @@ async function updateProfile(data) {
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="#1db954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
                 listening to spotify
               </span>
+              <button id="playAlongBtn" onclick="togglePlayAlong()" data-state="idle" style="background:#1a1a1a;border:1px solid #2e2e2e;border-radius:999px;color:#777;font-size:10px;font-weight:700;font-family:inherit;padding:4px 10px;cursor:pointer;transition:all 0.2s ease;letter-spacing:0.03em;">▶ play along</button>
             </div>
             <a href="${trackUrl}" target="_blank" class="activity-name">${spotify.song}</a>
             <div class="activity-sub">${spotify.artist} · ${spotify.album}</div>
@@ -236,6 +432,7 @@ async function updateProfile(data) {
       currentLyrics = [];
       document.getElementById('lyricsContent').innerHTML = '<div class="lyrics-loading">loading lyrics...</div>';
       fetchLyrics(spotify);
+      searchAndPlayYouTube(spotify);
     }
 
     lyricsOpen = true;
@@ -250,6 +447,7 @@ async function updateProfile(data) {
     currentSpotifyData = null;
     currentLyrics = [];
     document.getElementById('lyricsLayout').classList.remove('spotify-active');
+    destroyYTPlayer();
     if (lyricsOpen) {
       lyricsWasOpen = true;
       lyricsOpen = false;
