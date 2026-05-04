@@ -19,6 +19,19 @@
 
 <div class="lyrics-layout-outer">
 <div class="lyrics-layout" id="lyricsLayout">
+  <div id="guestbookCard" class="guestbook-side-panel guestbook-hidden">
+    <div class="guestbook-panel-title">guestbook</div>
+    <form id="guestbookForm" class="guestbook-form">
+      <div class="guestbook-header-row">
+        <input id="guestName" class="guestbook-name" type="text" maxlength="30" placeholder="name" />
+        <button type="submit" class="guestbook-submit">post</button>
+      </div>
+      <textarea id="guestMessage" class="guestbook-message" rows="3" maxlength="280" placeholder="write something" required></textarea>
+    </form>
+    <div id="guestbookStatus" class="guestbook-status">loading guestbook entries…</div>
+    <div id="guestbookEntries" class="guestbook-entries"></div>
+  </div>
+
   <div class="card">
 
     <div class="views">
@@ -120,6 +133,9 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
       <img src="media/badge3.gif" alt="mozilla"/>
     </div>
 
+    <hr/>
+    <button type="button" id="guestbookToggle" class="guestbook-toggle">show guestbook</button>
+
   </div>
 </div>
 </div>
@@ -136,6 +152,7 @@ steal my code ur stealing it from 1k others im a pro vibe coder</div>
 <audio id="audio" src="media/ohquesera.mp3" preload="metadata"></audio>
 <div id="lyricsContent" style="display:none;"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="script.js"></script>
 
 </body>
