@@ -753,7 +753,7 @@ async function initGuestbook() {
       if (messageInput) messageInput.value = '';
       fetchGuestbookEntries();
     } catch (err) {
-      if (status) status.textContent = 'could not save your message';
+      if (status) status.textContent = 'could not save your message, try again later, you might be rate limited.';
       console.error('guestbook submit failed', err);
     }
   });
