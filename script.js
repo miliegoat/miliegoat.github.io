@@ -286,7 +286,8 @@ function resolveActivityImage(game) {
 function updateGameElapsed() {
   document.querySelectorAll('.activity-sub.activity-elapsed').forEach(el => {
     const start = Number(el.dataset.start);
-    if (start) el.textContent = `played ${fmtDuration(Date.now() - start)}`;
+    const verb = el.dataset.verb || 'played';
+    if (start) el.textContent = `${verb} ${fmtDuration(Date.now() - start)}`;
   });
 }
 
@@ -299,27 +300,27 @@ function startGameActivityTimer(activities) {
 
 async function renderGameActivities(activities) {
   const cards = await Promise.all(
-    activities.filter(a => a.type === 0).map(async (game, index) => {
-      let iconUrl = resolveActivityImage(game);
-      if (!iconUrl && game.application_id) iconUrl = await getApplicationIcon(game.application_id);
+    activities.filter(a => a.type === 0 || (a.type === 3 && a.application_id === '1224777421941899285')).map(async (activity, index) => {
+      let iconUrl = resolveActivityImage(activity);
+      if (!iconUrl && activity.application_id) iconUrl = await getApplicationIcon(activity.application_id);
 
-      const elapsed = game.timestamps?.start ? fmtDuration(Date.now() - game.timestamps.start) : null;
-      const elapsedHtml = game.timestamps?.start
-        ? `<div class="activity-sub activity-elapsed" data-start="${game.timestamps.start}">played ${elapsed}</div>`
+      const elapsed = activity.timestamps?.start ? fmtDuration(Date.now() - activity.timestamps.start) : null;
+      const elapsedHtml = activity.timestamps?.start
+        ? `<div class="activity-sub activity-elapsed" data-start="${activity.timestamps.start}" data-verb="${activity.type === 3 ? 'watched' : 'played'}">${activity.type === 3 ? 'watched' : 'played'} ${elapsed}</div>`
         : '';
-      const activityId = game.id || game.application_id || `game-${index}`;
+      const activityId = activity.id || activity.application_id || `activity-${index}`;
 
       return `
         <div class="discord-activity" data-activity-id="${activityId}">
           <div class="activity-inner">
             ${iconUrl
-              ? `<img src="${iconUrl}" class="activity-art" loading="lazy" onerror="this.outerHTML='<div class=&quot;activity-art-placeholder&quot;>🎮</div>'"/>`
-              : `<div class="activity-art-placeholder">🎮</div>`}
+              ? `<img src="${iconUrl}" class="activity-art" loading="lazy" onerror="this.outerHTML='<div class=&quot;activity-art-placeholder&quot;>${activity.type === 3 ? '📺' : '🎮'}</div>'"/>`
+              : `<div class="activity-art-placeholder">${activity.type === 3 ? '📺' : '🎮'}</div>`}
             <div class="activity-info">
-              <div class="activity-type">playing</div>
-              <div class="activity-name">${game.name}</div>
-              ${game.details ? `<div class="activity-sub">${game.details}</div>` : ''}
-              ${game.state ? `<div class="activity-sub">${game.state}</div>` : ''}
+              <div class="activity-type">${activity.type === 3 ? 'watching' : 'playing'}</div>
+              <div class="activity-name">${activity.name}</div>
+              ${activity.details ? `<div class="activity-sub">${activity.details}</div>` : ''}
+              ${activity.state ? `<div class="activity-sub">${activity.state}</div>` : ''}
               ${elapsedHtml}
             </div>
           </div>
