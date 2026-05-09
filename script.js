@@ -953,4 +953,43 @@ animateParallax();
 document.getElementById('playBtn').addEventListener('click', togglePlay);
 document.getElementById('muteBtn').addEventListener('click', toggleMute);
 document.getElementById('volSlider').addEventListener('input', (e) => setVolume(parseFloat(e.target.value)));
+
+// Webring embed
+(function() {
+  var host = location.hostname.replace(/^www\./, '');
+  var container = document.createElement('div');
+  container.id = 'lc-embed';
+  container.style.cssText = 'position:fixed;bottom:16px;left:16px;z-index:99999;font-family:Inter,system-ui,sans-serif;';
+  document.body.appendChild(container);
+
+  // Add mobile responsive styles
+  var style = document.createElement('style');
+  style.textContent = '@media (max-width: 640px) { #lc-embed { left: 50% !important; transform: translateX(-50%); bottom: 16px !important; } }';
+  document.head.appendChild(style);
+
+  var bg = '#161616';
+  var border = '#252525';
+  var text = '#ccc';
+  var accentBg = 'rgba(224, 120, 48, 0.1)';
+  var accentBorder = 'rgba(224, 120, 48, 0.4)';
+  var accentText = '#e07830';
+
+  fetch("https://lanyard.cafe" + '/api/ring?url=' + encodeURIComponent(host))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var prev = data.prev, next = data.next, random = data.random;
+      var isMember = data.current !== null;
+      var currentLine = isMember ? '<p style="margin:0;font-size:11px;color:' + text + ';margin-top:8px;">you are at <span style="font-weight:600;color:' + accentText + ';">' + data.current.url + '</span></p>' : '';
+      container.innerHTML =
+        '<div style="background:' + bg + ';border:1px solid ' + border + ';border-radius:12px;padding:12px;display:inline-block;font-size:12px;">' +
+        '<div style="display:flex;gap:8px;' + (isMember ? 'margin-bottom:8px;' : '') + '">' +
+        '<a href="' + prev.url + '" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:8px;background:' + accentBg + ';color:' + accentText + ';border:1px solid ' + accentBorder + ';font-weight:600;font-size:11px;text-decoration:none;white-space:nowrap;transition:all 200ms;cursor:pointer;">\u25C0</a>' +
+        '<a href="' + random.url + '" style="display:inline-flex;align-items:center;padding:6px 12px;border-radius:8px;background:' + accentBg + ';color:' + accentText + ';border:1px solid ' + accentBorder + ';font-weight:600;font-size:11px;text-decoration:none;white-space:nowrap;transition:all 200ms;cursor:pointer;">random</a>' +
+        '<a href="' + next.url + '" style="display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:8px;background:' + accentBg + ';color:' + accentText + ';border:1px solid ' + accentBorder + ';font-weight:600;font-size:11px;text-decoration:none;white-space:nowrap;transition:all 200ms;cursor:pointer;">\u25B6</a>' +
+        '</div>' +
+        currentLine +
+        '</div>';
+    })
+    .catch(function() {});
+})();
 document.getElementById('progressBar').addEventListener('click', seek);
