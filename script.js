@@ -574,13 +574,14 @@ function updateLyricsPanel() {
 
   songEl.textContent = currentSpotifyData ? currentSpotifyData.song : 'lyrics';
 
-  if (currentLyrics.length > 0) {
-    lyricsEl.innerHTML = currentLyrics.map((l, i) =>
-      `<div class="lw-lyric-line" id="wlyric-${i}">${l.text}</div>`
-    ).join('');
-  } else {
-    lyricsEl.innerHTML = document.getElementById('lyricsContent').innerHTML;
-  }
+    if (currentLyrics.length > 0) {
+      lyricsEl.innerHTML = currentLyrics.map((l, i) =>
+        `<div class="lw-lyric-line" id="wlyric-${i}">${l.text}</div>`
+      ).join('');
+    } else {
+      lyricsEl.innerHTML = document.getElementById('lyricsContent').innerHTML;
+    }
+    lyricsEl.classList.toggle('is-plain', currentLyrics.length === 0);
 }
 
 function toggleLyrics() {
