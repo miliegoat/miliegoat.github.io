@@ -909,6 +909,9 @@ a.activity-name:hover { color: #e07830; }
   scrollbar-color: #2a2a2a transparent;
   scroll-behavior: smooth;
 }
+.lw-lyrics.is-plain {
+  overflow-y: auto;
+}
 .lw-lyrics::-webkit-scrollbar { width: 5px; }
 .lw-lyrics::-webkit-scrollbar-thumb {
   background: #2a2a2a;
@@ -941,6 +944,12 @@ a.activity-name:hover { color: #e07830; }
   opacity: 1;
 }
 
+.lyrics-plain {
+  font-size: 15px;
+  color: #888;
+  line-height: 2;
+  font-weight: 500;
+}
 .lyrics-loading {
   font-size: 12px;
   color: #444;
