@@ -28,6 +28,8 @@ let guestbookOpen = false;
 let currentTrackId = null;
 let currentSpotifyData = null;
 let gameActivityInterval = null;
+let lastProfileDataHash = null;
+let profileUpdateTimeout = null;
 const appIconCache = new Map();
 
 let ytPlayer = null;
@@ -386,31 +388,34 @@ async function updateProfile(data) {
     currentTrackId = spotify.track_id;
     currentSpotifyData = spotify;
 
-    spotifyEl.innerHTML = `
-      <div class="discord-activity">
-        <div class="activity-inner">
-          <img src="${spotify.album_art_url}" class="activity-art" loading="lazy" onerror="this.style.display='none'"/>
-          <div class="activity-info">
-            <div class="activity-type" style="display:flex;justify-content:space-between;align-items:center;">
-              <span style="display:flex;align-items:center;gap:4px;">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="#1db954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-                listening to spotify
-              </span>
-              <button id="playAlongBtn" onclick="togglePlayAlong()" data-state="idle" style="background:#1a1a1a;border:1px solid #2e2e2e;border-radius:999px;color:#777;font-size:10px;font-weight:700;font-family:inherit;padding:4px 10px;cursor:pointer;transition:all 0.2s ease;letter-spacing:0.03em;">▶ play along</button>
-            </div>
-            <a href="${trackUrl}" target="_blank" class="activity-name">${spotify.song}</a>
-            <div class="activity-sub">${spotify.artist} · ${spotify.album}</div>
-            <div class="spotify-progress-row">
-              <span class="spotify-time" id="spotifyElapsed"></span>
-              <div class="progress-bar disabled" style="flex:1;">
-                <div class="progress-fill" id="spotifyFill" style="width:0%;transition:none;"></div>
+    // Only update Spotify display HTML if track actually changed
+    if (trackChanged) {
+      spotifyEl.innerHTML = `
+        <div class="discord-activity">
+          <div class="activity-inner">
+            <img src="${spotify.album_art_url}" class="activity-art" loading="lazy" onerror="this.style.display='none'"/>
+            <div class="activity-info">
+              <div class="activity-type" style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="display:flex;align-items:center;gap:4px;">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="#1db954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+                  listening to spotify
+                </span>
+                <button id="playAlongBtn" onclick="togglePlayAlong()" data-state="idle" style="background:#1a1a1a;border:1px solid #2e2e2e;border-radius:999px;color:#777;font-size:10px;font-weight:700;font-family:inherit;padding:4px 10px;cursor:pointer;transition:all 0.2s ease;letter-spacing:0.03em;">▶ play along</button>
               </div>
-              <span class="spotify-time">${fmtMs(duration)}</span>
+              <a href="${trackUrl}" target="_blank" class="activity-name">${spotify.song}</a>
+              <div class="activity-sub">${spotify.artist} · ${spotify.album}</div>
+              <div class="spotify-progress-row">
+                <span class="spotify-time" id="spotifyElapsed"></span>
+                <div class="progress-bar disabled" style="flex:1;">
+                  <div class="progress-fill" id="spotifyFill" style="width:0%;transition:none;"></div>
+                </div>
+                <span class="spotify-time">${fmtMs(duration)}</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    `;
+      `;
+    }
 
     if (duration > 0) {
       const start = spotify.timestamps.start;
@@ -775,7 +780,33 @@ function connectLanyard() {
       heartbeat = setInterval(() => ws.send(JSON.stringify({ op: 3 })), msg.d.heartbeat_interval);
     }
     if (msg.op === 0 && (msg.t === 'INIT_STATE' || msg.t === 'PRESENCE_UPDATE')) {
-      await updateProfile(msg.d);
+      // Filter out blocked activities before processing
+      if (msg.d.activities) {
+        msg.d.activities = msg.d.activities.filter(a => !BLOCKED_ACTIVITIES.includes(a.application_id));
+      }
+      
+      // Only update if relevant data actually changed
+      const dataHash = JSON.stringify({
+        spotify: msg.d.listening_to_spotify ? {
+          track_id: msg.d.spotify?.track_id,
+          song: msg.d.spotify?.song,
+          artist: msg.d.spotify?.artist,
+          album: msg.d.spotify?.album,
+        } : null,
+        activities: msg.d.activities?.map(a => ({ id: a.id, type: a.type, name: a.name })) || [],
+        status: msg.d.discord_status,
+      });
+      
+      if (dataHash === lastProfileDataHash) {
+        return; // No relevant changes
+      }
+      lastProfileDataHash = dataHash;
+      
+      // Debounce to prevent rapid successive updates
+      clearTimeout(profileUpdateTimeout);
+      profileUpdateTimeout = setTimeout(() => {
+        updateProfile(msg.d);
+      }, 100);
     }
   });
 
