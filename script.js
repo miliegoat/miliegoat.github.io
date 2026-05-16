@@ -388,7 +388,6 @@ async function updateProfile(data) {
     currentTrackId = spotify.track_id;
     currentSpotifyData = spotify;
 
-    // Only update Spotify display HTML if track actually changed
     if (trackChanged) {
       spotifyEl.innerHTML = `
         <div class="discord-activity">
@@ -780,12 +779,10 @@ function connectLanyard() {
       heartbeat = setInterval(() => ws.send(JSON.stringify({ op: 3 })), msg.d.heartbeat_interval);
     }
     if (msg.op === 0 && (msg.t === 'INIT_STATE' || msg.t === 'PRESENCE_UPDATE')) {
-      // Filter out blocked activities before processing
       if (msg.d.activities) {
         msg.d.activities = msg.d.activities.filter(a => !BLOCKED_ACTIVITIES.includes(a.application_id));
       }
       
-      // Only update if relevant data actually changed
       const dataHash = JSON.stringify({
         spotify: msg.d.listening_to_spotify ? {
           track_id: msg.d.spotify?.track_id,
@@ -798,11 +795,10 @@ function connectLanyard() {
       });
       
       if (dataHash === lastProfileDataHash) {
-        return; // No relevant changes
+        return; 
       }
       lastProfileDataHash = dataHash;
       
-      // Debounce to prevent rapid successive updates
       clearTimeout(profileUpdateTimeout);
       profileUpdateTimeout = setTimeout(() => {
         updateProfile(msg.d);
