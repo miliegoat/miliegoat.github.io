@@ -18,6 +18,7 @@ const WORKER_URL = 'https://snowy-dust-17c3.asdwaawdawd81.workers.dev/';
 const DISCORD_ID = '1125787079654260777';
 const STATUS_COLORS = { online: '#4ade80', idle: '#facc15', dnd: '#f87171', offline: '#6b7280' };
 const STATUS_LABELS = { online: 'online', idle: 'idle', dnd: 'do not disturb', offline: 'offline' };
+const BLOCKED_ACTIVITIES = ['1126057621254852678'];
 
 let spotifyProgressInterval = null;
 let currentLyrics = [];
@@ -300,7 +301,7 @@ function startGameActivityTimer(activities) {
 
 async function renderGameActivities(activities) {
   const cards = await Promise.all(
-    activities.filter(a => a.type === 0 || (a.type === 3 && a.application_id === '1224777421941899285')).map(async (activity, index) => {
+    activities.filter(a => !BLOCKED_ACTIVITIES.includes(a.application_id) && (a.type === 0 || (a.type === 3 && a.application_id === '1224777421941899285'))).map(async (activity, index) => {
       let iconUrl = resolveActivityImage(activity);
       if (!iconUrl && activity.application_id) iconUrl = await getApplicationIcon(activity.application_id);
 
@@ -955,7 +956,6 @@ document.getElementById('playBtn').addEventListener('click', togglePlay);
 document.getElementById('muteBtn').addEventListener('click', toggleMute);
 document.getElementById('volSlider').addEventListener('input', (e) => setVolume(parseFloat(e.target.value)));
 
-// Webring embed
 (function() {
   var host = location.hostname.replace(/^www\./, '');
   var container = document.createElement('div');
@@ -963,7 +963,6 @@ document.getElementById('volSlider').addEventListener('input', (e) => setVolume(
   container.style.cssText = 'position:fixed;bottom:16px;left:16px;z-index:99999;font-family:Inter,system-ui,sans-serif;';
   document.body.appendChild(container);
 
-  // Add mobile responsive styles
   var style = document.createElement('style');
   style.textContent = '@media (max-width: 640px) { #lc-embed { left: 50% !important; transform: translateX(-50%); bottom: 16px !important; } }';
   document.head.appendChild(style);
