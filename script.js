@@ -371,7 +371,7 @@ async function updateProfile(data) {
       ${customStatusText ? `<div style="font-size:12px;color:#666;margin-top:3px;">${customStatusText}</div>` : ''}
       <div style="font-size:11px;color:${statusColor};margin-top:2px;font-weight:500;">${statusLabel}</div>
     </div>
-    <div class="badge">🦌 noko</div>
+    <div class="badge">🍁 lnyd</div>
   `;
 
   clearInterval(spotifyProgressInterval);
