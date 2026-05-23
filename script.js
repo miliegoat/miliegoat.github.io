@@ -18,7 +18,7 @@ const WORKER_URL = 'https://snowy-dust-17c3.asdwaawdawd81.workers.dev/';
 const DISCORD_ID = '1125787079654260777';
 const STATUS_COLORS = { online: '#4ade80', idle: '#facc15', dnd: '#f87171', offline: '#6b7280' };
 const STATUS_LABELS = { online: 'online', idle: 'idle', dnd: 'do not disturb', offline: 'offline' };
-const BLOCKED_ACTIVITIES = ['1126057621254852678'];
+const BLOCKED_ACTIVITIES = ['1126057621254852678', '1307468756590792704'];
 
 let spotifyProgressInterval = null;
 let currentLyrics = [];
