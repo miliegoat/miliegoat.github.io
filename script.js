@@ -14,6 +14,7 @@
 })();
 
 const WORKER_URL = 'https://snowy-dust-17c3.asdwaawdawd81.workers.dev/';
+const AUTHOR_LIKE_SECRET = 'set-this-to-your-secret';
 
 const DISCORD_ID = '1125787079654260777';
 const STATUS_COLORS = { online: '#4ade80', idle: '#facc15', dnd: '#f87171', offline: '#6b7280' };
@@ -616,6 +617,12 @@ function escapeHtml(value) {
     .replace(/'/g, '&#39;');
 }
 
+let gbOffset = 0;
+let gbTotal = 0;
+let gbAllEntries = [];
+const GB_PAGE = 10;
+const GB_MAX = 500;
+
 function renderGuestbookEntries(entries) {
   const container = document.getElementById('guestbookEntries');
   const status = document.getElementById('guestbookStatus');
@@ -624,34 +631,127 @@ function renderGuestbookEntries(entries) {
   if (!entries.length) {
     status.textContent = 'no guestbook entries yet — be the first!';
     container.innerHTML = '<div class="guestbook-empty">No public messages yet. Submit one with the form above.</div>';
+    updateLoadMore();
     return;
   }
 
-  const sorted = [...entries].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-  status.textContent = `${sorted.length} saved message${sorted.length === 1 ? '' : 's'}`;
-  container.innerHTML = sorted.map(entry => `
-    <div class="guestbook-entry">
-      <div class="guestbook-entry-title">${escapeHtml(entry.name || 'anonymous')}</div>
-      <div class="guestbook-entry-body">${escapeHtml(entry.message || '')}</div>
-      <div class="guestbook-entry-meta">${formatTimestamp(entry.created_at)}</div>
-    </div>
-  `).join('');
+  const liked = JSON.parse(localStorage.getItem('gb_liked') || '{}');
+
+  container.innerHTML = entries.map(entry => {
+    const userLiked = liked[entry.id];
+    const likeIcon = userLiked ? '♥' : '♡';
+    const authorBadge = entry.liked_by_author ? '<span class="author-like-badge">♥ liked by author</span>' : '';
+    return `
+      <div class="guestbook-entry" data-id="${entry.id}">
+        <div class="guestbook-entry-title">${escapeHtml(entry.name || 'anonymous')}</div>
+        <div class="guestbook-entry-body">${escapeHtml(entry.message || '')}</div>
+        <div class="guestbook-entry-footer">
+          <span class="guestbook-entry-meta">${formatTimestamp(entry.created_at)}</span>
+          <span class="guestbook-entry-actions">
+            <button class="like-btn ${userLiked ? 'liked' : ''}" data-id="${entry.id}">${likeIcon}</button>
+            <span class="like-count">${entry.likes || 0}</span>
+            ${authorBadge}
+          </span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const shown = entries.length;
+  const total = Math.min(gbTotal, GB_MAX);
+  status.textContent = `${shown} of ${total} saved message${total === 1 ? '' : 's'}`;
+
+  updateLoadMore();
+}
+
+function updateLoadMore() {
+  const container = document.getElementById('guestbookEntries');
+  const hasMore = gbOffset + GB_PAGE < Math.min(gbTotal, GB_MAX);
+
+  let loadMoreBtn = document.getElementById('gbLoadMore');
+  if (hasMore) {
+    if (!loadMoreBtn) {
+      loadMoreBtn = document.createElement('button');
+      loadMoreBtn.id = 'gbLoadMore';
+      loadMoreBtn.className = 'guestbook-load-more';
+      loadMoreBtn.textContent = 'load more';
+      loadMoreBtn.addEventListener('click', loadMoreGuestbookEntries);
+      container.after(loadMoreBtn);
+    }
+  } else if (loadMoreBtn) {
+    loadMoreBtn.remove();
+  }
 }
 
 async function fetchGuestbookEntries() {
+  gbOffset = 0;
+  gbAllEntries = [];
   const status = document.getElementById('guestbookStatus');
   if (status) status.textContent = 'loading guestbook entries…';
 
   try {
-    const res = await fetch(WORKER_URL);
+    const res = await fetch(`${WORKER_URL}?limit=${GB_PAGE}&offset=0`);
     if (!res.ok) throw new Error('failed');
     const data = await res.json();
-    renderGuestbookEntries(data || []);
+    gbAllEntries = data.entries || [];
+    gbTotal = data.total || 0;
+    renderGuestbookEntries(gbAllEntries);
   } catch (err) {
     if (status) status.textContent = 'could not load guestbook entries';
     document.getElementById('guestbookEntries').innerHTML = '<div class="guestbook-empty">guestbook is unavailable right now.</div>';
     console.error('guestbook load failed', err);
   }
+}
+
+async function loadMoreGuestbookEntries() {
+  const newOffset = gbOffset + GB_PAGE;
+  if (newOffset >= GB_MAX) return;
+
+  const status = document.getElementById('guestbookStatus');
+  if (status) status.textContent = 'loading more…';
+
+  try {
+    const res = await fetch(`${WORKER_URL}?limit=${GB_PAGE}&offset=${newOffset}`);
+    if (!res.ok) throw new Error('failed');
+    const data = await res.json();
+    const more = data.entries || [];
+    gbAllEntries = [...gbAllEntries, ...more];
+    gbOffset = newOffset;
+    renderGuestbookEntries(gbAllEntries);
+  } catch (err) {
+    if (status) status.textContent = 'could not load more entries';
+    console.error('load more failed', err);
+  }
+}
+
+function handleLike(entryId) {
+  const liked = JSON.parse(localStorage.getItem('gb_liked') || '{}');
+  if (liked[entryId]) return;
+
+  const body = { action: 'like', id: entryId };
+  if (AUTHOR_LIKE_SECRET) body.secret = AUTHOR_LIKE_SECRET;
+
+  fetch(WORKER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+    .then(res => {
+      if (!res.ok) throw new Error('failed');
+      return res.json();
+    })
+    .then(result => {
+      liked[entryId] = true;
+      localStorage.setItem('gb_liked', JSON.stringify(liked));
+
+      const entry = gbAllEntries.find(e => e.id === entryId);
+      if (entry) {
+        entry.likes = result.likes;
+        if (result.liked_by_author) entry.liked_by_author = true;
+      }
+      renderGuestbookEntries(gbAllEntries);
+    })
+    .catch(err => console.error('like failed', err));
 }
 
 async function initGuestbook() {
@@ -729,6 +829,14 @@ async function initGuestbook() {
       }
     });
     updateToggle();
+  }
+
+  const entriesContainer = document.getElementById('guestbookEntries');
+  if (entriesContainer) {
+    entriesContainer.addEventListener('click', (e) => {
+      const btn = e.target.closest('.like-btn');
+      if (btn) handleLike(btn.dataset.id);
+    });
   }
 
   if (!form) return;
