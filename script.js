@@ -750,7 +750,8 @@ function toggleLike(entryId) {
       const entry = gbAllEntries.find(e => String(e.id) === entryId);
       if (entry) {
         entry.likes = result.likes;
-        entry.liked_by_author = !!result.liked_by_author;
+        if (result.liked_by_author) entry.liked_by_author = true;
+        else if (authorToken && action === 'unlike') entry.liked_by_author = false;
       }
       renderGuestbookEntries(gbAllEntries);
     })
