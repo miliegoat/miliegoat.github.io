@@ -720,6 +720,8 @@ a.activity-name:hover { color: #e07830; }
   font-size: 12px;
   font-weight: 600;
   color: #ccc;
+  flex: 1;
+  min-width: 0;
 }
 
 .guestbook-content {
@@ -884,6 +886,22 @@ a.activity-name:hover { color: #e07830; }
 }
 .guestbook-load-more:active {
   transform: translateY(0);
+}
+
+.author-status {
+  font-size: 10px;
+  color: #555;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  user-select: none;
+  margin-left: auto;
+}
+.author-status:hover {
+  color: #e07830;
+}
+.author-status.authenticated {
+  color: #e07830;
+  font-weight: 700;
 }
 .guestbook-entry-title {
   font-size: 13px;

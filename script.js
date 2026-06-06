@@ -14,7 +14,7 @@
 })();
 
 const WORKER_URL = 'https://snowy-dust-17c3.asdwaawdawd81.workers.dev/';
-const AUTHOR_LIKE_SECRET = 'set-this-to-your-secret';
+let authorToken = sessionStorage.getItem('author_token') || null;
 
 const DISCORD_ID = '1125787079654260777';
 const STATUS_COLORS = { online: '#4ade80', idle: '#facc15', dnd: '#f87171', offline: '#6b7280' };
@@ -729,7 +729,7 @@ function handleLike(entryId) {
   if (liked[entryId]) return;
 
   const body = { action: 'like', id: entryId };
-  if (AUTHOR_LIKE_SECRET) body.secret = AUTHOR_LIKE_SECRET;
+  if (authorToken) body.token = authorToken;
 
   fetch(WORKER_URL, {
     method: 'POST',
@@ -744,7 +744,7 @@ function handleLike(entryId) {
       liked[entryId] = true;
       localStorage.setItem('gb_liked', JSON.stringify(liked));
 
-      const entry = gbAllEntries.find(e => e.id === entryId);
+      const entry = gbAllEntries.find(e => String(e.id) === entryId);
       if (entry) {
         entry.likes = result.likes;
         if (result.liked_by_author) entry.liked_by_author = true;
@@ -752,6 +752,48 @@ function handleLike(entryId) {
       renderGuestbookEntries(gbAllEntries);
     })
     .catch(err => console.error('like failed', err));
+}
+
+function updateAuthorStatus() {
+  const el = document.getElementById('authorStatus');
+  if (!el) return;
+  if (authorToken) {
+    el.textContent = 'author ✓';
+    el.classList.add('authenticated');
+  } else {
+    el.textContent = 'author';
+    el.classList.remove('authenticated');
+  }
+}
+
+async function authenticateAuthor() {
+  if (authorToken) {
+    authorToken = null;
+    sessionStorage.removeItem('author_token');
+    updateAuthorStatus();
+    return;
+  }
+
+  const password = prompt('enter author password:');
+  if (!password) return;
+
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'auth', password }),
+    });
+    const data = await res.json();
+    if (data.ok && data.token) {
+      authorToken = data.token;
+      sessionStorage.setItem('author_token', data.token);
+      updateAuthorStatus();
+    } else {
+      alert('incorrect password');
+    }
+  } catch {
+    alert('authentication failed');
+  }
 }
 
 async function initGuestbook() {
@@ -838,6 +880,12 @@ async function initGuestbook() {
       if (btn) handleLike(btn.dataset.id);
     });
   }
+
+  const authorEl = document.getElementById('authorStatus');
+  if (authorEl) {
+    authorEl.addEventListener('click', authenticateAuthor);
+  }
+  updateAuthorStatus();
 
   if (!form) return;
 
