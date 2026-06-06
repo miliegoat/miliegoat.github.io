@@ -738,15 +738,13 @@ function toggleLike(entryId) {
     body: JSON.stringify(body),
   })
     .then(res => {
-      if (!res.ok) throw new Error('failed');
+      if (!res.ok) throw new Error('request failed');
       return res.json();
     })
     .then(result => {
-      if (action === 'like') {
-        liked[entryId] = true;
-      } else {
-        delete liked[entryId];
-      }
+      if (!result.ok) return;
+      if (action === 'like') liked[entryId] = true;
+      else delete liked[entryId];
       localStorage.setItem('gb_liked', JSON.stringify(liked));
 
       const entry = gbAllEntries.find(e => String(e.id) === entryId);
