@@ -754,23 +754,10 @@ function handleLike(entryId) {
     .catch(err => console.error('like failed', err));
 }
 
-function updateAuthorStatus() {
-  const el = document.getElementById('authorStatus');
-  if (!el) return;
-  if (authorToken) {
-    el.textContent = 'author ✓';
-    el.classList.add('authenticated');
-  } else {
-    el.textContent = 'author';
-    el.classList.remove('authenticated');
-  }
-}
-
 async function authenticateAuthor() {
   if (authorToken) {
     authorToken = null;
     sessionStorage.removeItem('author_token');
-    updateAuthorStatus();
     return;
   }
 
@@ -787,7 +774,6 @@ async function authenticateAuthor() {
     if (data.ok && data.token) {
       authorToken = data.token;
       sessionStorage.setItem('author_token', data.token);
-      updateAuthorStatus();
     } else {
       alert('incorrect password');
     }
@@ -795,6 +781,18 @@ async function authenticateAuthor() {
     alert('authentication failed');
   }
 }
+
+let keyBuffer = '';
+document.addEventListener('keydown', (e) => {
+  if (e.key.length === 1) {
+    keyBuffer += e.key.toLowerCase();
+    if (keyBuffer.length > 9) keyBuffer = keyBuffer.slice(-9);
+    if (keyBuffer === 'iamauthor') {
+      keyBuffer = '';
+      authenticateAuthor();
+    }
+  }
+});
 
 async function initGuestbook() {
   const form = document.getElementById('guestbookForm');
@@ -880,12 +878,6 @@ async function initGuestbook() {
       if (btn) handleLike(btn.dataset.id);
     });
   }
-
-  const authorEl = document.getElementById('authorStatus');
-  if (authorEl) {
-    authorEl.addEventListener('click', authenticateAuthor);
-  }
-  updateAuthorStatus();
 
   if (!form) return;
 
