@@ -724,11 +724,12 @@ async function loadMoreGuestbookEntries() {
   }
 }
 
-function handleLike(entryId) {
+function toggleLike(entryId) {
   const liked = JSON.parse(localStorage.getItem('gb_liked') || '{}');
-  if (liked[entryId]) return;
+  const isLiked = liked[entryId];
+  const action = isLiked ? 'unlike' : 'like';
 
-  const body = { action: 'like', id: entryId };
+  const body = { action, id: entryId };
   if (authorToken) body.token = authorToken;
 
   fetch(WORKER_URL, {
@@ -741,17 +742,21 @@ function handleLike(entryId) {
       return res.json();
     })
     .then(result => {
-      liked[entryId] = true;
+      if (action === 'like') {
+        liked[entryId] = true;
+      } else {
+        delete liked[entryId];
+      }
       localStorage.setItem('gb_liked', JSON.stringify(liked));
 
       const entry = gbAllEntries.find(e => String(e.id) === entryId);
       if (entry) {
         entry.likes = result.likes;
-        if (result.liked_by_author) entry.liked_by_author = true;
+        entry.liked_by_author = !!result.liked_by_author;
       }
       renderGuestbookEntries(gbAllEntries);
     })
-    .catch(err => console.error('like failed', err));
+    .catch(err => console.error('toggle like failed', err));
 }
 
 async function authenticateAuthor() {
@@ -875,7 +880,7 @@ async function initGuestbook() {
   if (entriesContainer) {
     entriesContainer.addEventListener('click', (e) => {
       const btn = e.target.closest('.like-btn');
-      if (btn) handleLike(btn.dataset.id);
+      if (btn) toggleLike(btn.dataset.id);
     });
   }
 
