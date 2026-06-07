@@ -653,7 +653,12 @@ body {
 .guestbook-entries {
   display: flex;
   flex-direction: column;
+  max-height: 340px;
+  overflow-y: auto;
+  scrollbar-width: none;
 }
+
+.guestbook-entries::-webkit-scrollbar { display: none; }
 
 .guestbook-entry {
   padding: 10px 0;
@@ -661,6 +666,16 @@ body {
 }
 
 .guestbook-entry:last-child { border-bottom: none; }
+
+.gb-entry {
+  animation: gbSlideIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+@keyframes gbSlideIn {
+  to { opacity: 1; transform: translateY(0); }
+}
 
 .guestbook-entry-title {
   font-size: 12px;
@@ -707,6 +722,15 @@ body {
 
 .like-btn:hover { color: var(--accent); transform: scale(1.15); }
 .like-btn.liked { color: var(--accent); }
+.like-btn.like-pop {
+  animation: likePop 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes likePop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.35); }
+  100% { transform: scale(1); }
+}
 
 .like-count {
   font-size: 10px;
@@ -749,7 +773,7 @@ body {
   gap: 6px;
   flex-wrap: wrap;
   justify-content: center;
-  margin-bottom: 24px;
+  margin-bottom: 0;
   padding: 16px 0;
   border-top: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
@@ -770,8 +794,8 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 24px 0;
-  margin-bottom: 48px;
+  padding: 16px 0 32px;
+  margin-bottom: 0;
 }
 
 .wr-label {

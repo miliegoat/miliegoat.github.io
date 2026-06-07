@@ -20,11 +20,12 @@ function renderGuestbookEntries(entries) {
 
   const liked = JSON.parse(localStorage.getItem('gb_liked') || '{}');
 
-  container.innerHTML = entries.map(entry => {
+  container.innerHTML = entries.map(function(entry, i) {
     const userLiked = liked[entry.id];
     const likeIcon = userLiked ? '♥' : '♡';
     const authorBadge = entry.liked_by_author ? '<span class="author-like-badge">♥ liked by author</span>' : '';
-    return '<div class="guestbook-entry" data-id="' + entry.id + '">'
+    const animDelay = (i * 0.06).toFixed(2);
+    return '<div class="guestbook-entry gb-entry" data-id="' + entry.id + '" style="animation-delay:' + animDelay + 's">'
       + '<div class="guestbook-entry-title">' + escapeHtml(entry.name || 'anonymous') + '</div>'
       + '<div class="guestbook-entry-body">' + escapeHtml(entry.message || '') + '</div>'
       + '<div class="guestbook-entry-footer">'
@@ -93,7 +94,28 @@ async function loadMoreGuestbookEntries() {
     const more = data.entries || [];
     gbAllEntries = gbAllEntries.concat(more);
     gbOffset = newOffset;
-    renderGuestbookEntries(gbAllEntries);
+
+    const container = document.getElementById('guestbookEntries');
+    const liked = JSON.parse(localStorage.getItem('gb_liked') || '{}');
+    var startIdx = gbAllEntries.length - more.length;
+    var html = more.map(function(entry, i) {
+      const userLiked = liked[entry.id];
+      const likeIcon = userLiked ? '♥' : '♡';
+      const authorBadge = entry.liked_by_author ? '<span class="author-like-badge">♥ liked by author</span>' : '';
+      const animDelay = ((startIdx + i) * 0.06).toFixed(2);
+      return '<div class="guestbook-entry gb-entry" data-id="' + entry.id + '" style="animation-delay:' + animDelay + 's">'
+        + '<div class="guestbook-entry-title">' + escapeHtml(entry.name || 'anonymous') + '</div>'
+        + '<div class="guestbook-entry-body">' + escapeHtml(entry.message || '') + '</div>'
+        + '<div class="guestbook-entry-footer">'
+        + '<span class="guestbook-entry-meta">' + formatTimestamp(entry.created_at) + '</span>'
+        + '<span class="guestbook-entry-actions">'
+        + '<button class="like-btn ' + (userLiked ? 'liked' : '') + '" data-id="' + entry.id + '">' + likeIcon + '</button>'
+        + '<span class="like-count">' + (entry.likes || 0) + '</span>'
+        + authorBadge
+        + '</span></div></div>';
+    }).join('');
+    container.insertAdjacentHTML('beforeend', html);
+    updateLoadMore();
   } catch {
     if (status) status.textContent = 'could not load more';
   }
@@ -170,7 +192,11 @@ export function initGuestbook() {
   if (entriesContainer) {
     entriesContainer.addEventListener('click', (e) => {
       const btn = e.target.closest('.like-btn');
-      if (btn) toggleLike(btn.dataset.id);
+      if (btn) {
+        btn.classList.add('like-pop');
+        setTimeout(function() { btn.classList.remove('like-pop'); }, 400);
+        toggleLike(btn.dataset.id);
+      }
     });
   }
 
