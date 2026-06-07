@@ -6,7 +6,7 @@ export async function initViewCounter() {
       : 'https://api.counterapi.dev/v2/miliegoat/viewsmiliegoat/up';
     const res = await fetch(url);
     const data = await res.json();
-    document.getElementById('viewCount').textContent = Number(data.data.up_count).toLocaleString();
+    document.getElementById('viewCount').textContent = Number(data.data.up_count).toLocaleString() + ' visits';
     if (!counted) sessionStorage.setItem('mil_counted', '1');
   } catch {
     document.getElementById('viewCount').textContent = '—';
