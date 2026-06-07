@@ -21,6 +21,7 @@ const MARK_ERROR = '\u2715';
 let profileUpdateTimeout = null;
 let gameActivityInterval = null;
 let spotifyProgressInterval = null;
+let hideSpotifyTimer = null;
 
 function q(s) { return '"' + s + '"'; }
 
@@ -112,7 +113,7 @@ async function renderGameActivities(activities) {
         + '</div></div></div>';
     })
   );
-  document.getElementById('gameActivities').innerHTML = cards.join('');
+  document.getElementById('gameActivities').innerHTML = cards.length ? '<div class="slide-in">' + cards.join('') + '</div>' : '';
   startGameActivityTimer(activities);
 }
 
@@ -163,7 +164,9 @@ function renderSpotifyCard(spotify, trackChanged) {
   const trackUrl = 'https://open.spotify.com/track/' + spotify.track_id;
 
   if (trackChanged) {
-    spotifyEl.innerHTML = ''
+    if (hideSpotifyTimer) { clearTimeout(hideSpotifyTimer); hideSpotifyTimer = null; }
+    spotifyEl.className = '';
+    spotifyEl.innerHTML = '<div class="slide-in">'
       + '<div class="discord-activity" style="border-bottom:none;">'
       + '<div class="activity-inner">'
       + '<img src="' + spotify.album_art_url + '" class="activity-art" loading="lazy" onerror="this.style.display=' + q('none') + '"/>'
@@ -184,7 +187,8 @@ function renderSpotifyCard(spotify, trackChanged) {
       + '</div>'
       + '<span class="spotify-time">' + fmtMs(duration) + '</span>'
       + '</div>'
-      + '</div></div></div>';
+      + '</div></div></div>'
+      + '</div>';
   }
   startSpotifyTicker(spotify);
   if (trackChanged) {
@@ -198,8 +202,17 @@ function renderSpotifyCard(spotify, trackChanged) {
 function hideSpotify() {
   clearInterval(spotifyProgressInterval);
   spotifyProgressInterval = null;
+  if (hideSpotifyTimer) { clearTimeout(hideSpotifyTimer); hideSpotifyTimer = null; }
+  var spotifyEl = document.getElementById('spotifyActivity');
+  if (spotifyEl && spotifyEl.children.length) {
+    spotifyEl.className = 'slide-out';
+    hideSpotifyTimer = setTimeout(function() {
+      spotifyEl.className = '';
+      spotifyEl.innerHTML = '';
+      hideSpotifyTimer = null;
+    }, 260);
+  }
   document.getElementById('localPlayer').style.display = 'block';
-  document.getElementById('spotifyActivity').innerHTML = '';
   setCurrentTrackId(null);
   setCurrentSpotifyData(null);
   setCurrentLyrics([]);

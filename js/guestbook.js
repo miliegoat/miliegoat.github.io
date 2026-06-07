@@ -162,43 +162,9 @@ function authenticateAuthor() {
 
 export function initGuestbook() {
   const form = document.getElementById('guestbookForm');
-  const toggle = document.getElementById('guestbookToggle');
   const panel = document.getElementById('guestbookCard');
 
-  let guestbookOpen = false;
-
-  function updateToggle() {
-    if (!toggle) return;
-    toggle.textContent = guestbookOpen ? 'close' : 'guestbook';
-  }
-
-  function openGuestbook() {
-    if (!panel) return;
-    panel.classList.remove('guestbook-hidden');
-    void panel.offsetHeight;
-    panel.classList.add('guestbook-visible');
-    guestbookOpen = true;
-    updateToggle();
-    fetchGuestbookEntries();
-  }
-
-  function closeGuestbook() {
-    if (!panel) return;
-    panel.classList.remove('guestbook-visible');
-    guestbookOpen = false;
-    updateToggle();
-    setTimeout(() => {
-      panel.classList.add('guestbook-hidden');
-    }, 500);
-  }
-
-  if (toggle && panel) {
-    toggle.addEventListener('click', () => {
-      if (guestbookOpen) closeGuestbook();
-      else openGuestbook();
-    });
-    updateToggle();
-  }
+  fetchGuestbookEntries();
 
   const entriesContainer = document.getElementById('guestbookEntries');
   if (entriesContainer) {
