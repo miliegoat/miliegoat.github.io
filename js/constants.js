@@ -18,8 +18,8 @@ export const STATUS_LABELS = {
 
 export const STATUS_ICONS = {
   online: '<svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#31a24c"/></svg>',
-  idle: '<svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#faa61a"/><circle cx="8" cy="8" r="6" fill="#0a0a0a"/></svg>',
-  dnd: '<svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#ed4245"/><rect x="7" y="11" width="10" height="2" fill="black"/></svg>',
+  idle: '<svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#faa61a"/><circle cx="8" cy="8" r="6" fill="var(--bg)"/></svg>',
+  dnd: '<svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#ed4245"/><rect x="7" y="11" width="10" height="2" fill="var(--bg)"/></svg>',
   offline: '<svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="#747f8d" stroke-width="5"/></svg>',
 };
 
