@@ -222,9 +222,31 @@ function initSmoothScroll() {
   var running = false;
   var lastWheel = 0;
 
+  function getScrollParent(el) {
+    while (el && el !== document.body && el !== document.documentElement) {
+      var style = getComputedStyle(el);
+      if (
+        style.overflowY === "auto" ||
+        style.overflowY === "scroll"
+      ) {
+        if (el.scrollHeight > el.clientHeight) return el;
+      }
+      el = el.parentElement;
+    }
+    return null;
+  }
+
   document.addEventListener(
     "wheel",
     function (e) {
+      var sp = getScrollParent(e.target);
+      if (sp) {
+        var atTop = sp.scrollTop <= 0 && e.deltaY < 0;
+        var atBottom =
+          sp.scrollTop >= sp.scrollHeight - sp.clientHeight && e.deltaY > 0;
+        if (!atTop && !atBottom) return;
+      }
+
       e.preventDefault();
       lastWheel = Date.now();
       friction = 1.6;
