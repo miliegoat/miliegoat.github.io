@@ -651,8 +651,6 @@ body {
 }
 
 .guestbook-entries {
-  display: flex;
-  flex-direction: column;
   height: 340px;
   overflow-y: auto;
   scrollbar-width: none;
