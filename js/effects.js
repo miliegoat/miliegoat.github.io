@@ -240,12 +240,7 @@ function initSmoothScroll() {
     "wheel",
     function (e) {
       var sp = getScrollParent(e.target);
-      if (sp) {
-        var atTop = sp.scrollTop <= 0 && e.deltaY < 0;
-        var atBottom =
-          sp.scrollTop >= sp.scrollHeight - sp.clientHeight && e.deltaY > 0;
-        if (!atTop && !atBottom) return;
-      }
+      if (sp) return;
 
       e.preventDefault();
       lastWheel = Date.now();
