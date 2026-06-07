@@ -84,9 +84,6 @@ async function loadMoreGuestbookEntries() {
   const newOffset = gbOffset + GB_PAGE;
   if (newOffset >= GB_MAX) return;
 
-  const status = document.getElementById('guestbookStatus');
-  if (status) status.textContent = 'loading more...';
-
   try {
     const res = await fetch(WORKER_URL + '?limit=' + GB_PAGE + '&offset=' + newOffset);
     if (!res.ok) throw new Error('failed');
@@ -116,7 +113,11 @@ async function loadMoreGuestbookEntries() {
     }).join('');
     container.insertAdjacentHTML('beforeend', html);
     updateLoadMore();
+    const status = document.getElementById('guestbookStatus');
+    const total = Math.min(gbTotal, GB_MAX);
+    if (status) status.textContent = total + ' message' + (total === 1 ? '' : 's');
   } catch {
+    const status = document.getElementById('guestbookStatus');
     if (status) status.textContent = 'could not load more';
   }
 }
