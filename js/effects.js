@@ -218,9 +218,7 @@ function initSmoothScroll() {
   if ("ontouchstart" in window || navigator.maxTouchPoints > 0) return;
 
   var velocity = 0;
-  var friction = 1.6;
   var running = false;
-  var lastWheel = 0;
 
   function getScrollParent(el) {
     while (el && el !== document.body && el !== document.documentElement) {
@@ -243,10 +241,7 @@ function initSmoothScroll() {
       if (sp) return;
 
       e.preventDefault();
-      lastWheel = Date.now();
-      friction = 1.6;
-      velocity += e.deltaY * 2.0;
-      velocity = Math.max(-1000, Math.min(1000, velocity));
+      velocity = e.deltaY > 0 ? 400 : -400;
       if (!running) {
         running = true;
         requestAnimationFrame(frame);
@@ -256,15 +251,13 @@ function initSmoothScroll() {
   );
 
   function frame() {
-    if (Date.now() - lastWheel > 120) friction = 0.92;
-    velocity *= friction;
+    velocity *= 0.97;
     var oldY = window.scrollY;
     window.scrollBy(0, velocity);
 
     if (Math.abs(velocity) < 0.3 || Math.abs(window.scrollY - oldY) < 0.3) {
       velocity = 0;
       running = false;
-      friction = 1.6;
       return;
     }
 
@@ -273,20 +266,21 @@ function initSmoothScroll() {
 }
 
 function initRevealAnimations() {
-  var observer = new IntersectionObserver(
-    function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("revealed");
-        } else {
-          entry.target.classList.remove("revealed");
-        }
-      });
-    },
-    { threshold: 0, rootMargin: "-10px 0px -10px 0px" },
-  );
+  var els = document.querySelectorAll(".reveal");
+  if (!els.length) return;
 
-  document.querySelectorAll(".reveal").forEach(function (el) {
-    observer.observe(el);
-  });
+  function check() {
+    var h = window.innerHeight;
+    els.forEach(function (el) {
+      var r = el.getBoundingClientRect();
+      if (r.top < h - 40 && r.bottom > 40) {
+        el.classList.add("revealed");
+      } else if (r.bottom < -40 || r.top > h + 40) {
+        el.classList.remove("revealed");
+      }
+    });
+  }
+
+  window.addEventListener("scroll", check, { passive: true });
+  check();
 }
