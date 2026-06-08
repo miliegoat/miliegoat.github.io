@@ -271,6 +271,14 @@ export function initGuestbook() {
 
   if (!form) return;
 
+  var turnstileWidgetDiv = document.getElementById("turnstileWidget");
+  if (turnstileWidgetDiv && typeof turnstile !== "undefined") {
+    turnstile.render(turnstileWidgetDiv, {
+      sitekey: TURNSTILE_SITE_KEY,
+      theme: "auto",
+    });
+  }
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const nameInput = document.getElementById("guestName");

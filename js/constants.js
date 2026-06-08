@@ -33,4 +33,4 @@ export const BLOCKED_ACTIVITIES = [
 export const GB_PAGE = 4;
 export const GB_MAX = 500;
 
-export const TURNSTILE_SITE_KEY = "0x4AAAAAADg5x-2uxYliZ_RH";
+export const TURNSTILE_SITE_KEY = "0x4AAAAAADg6LkYattvc_Fqe";
