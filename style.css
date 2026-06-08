@@ -213,9 +213,7 @@
   padding: 0;
 }
 
-html {
-  scroll-behavior: smooth;
-}
+
 
 body {
   background: var(--bg);
@@ -229,6 +227,7 @@ body {
   font-size: 16px;
   user-select: none;
   -webkit-user-select: none;
+  overflow-x: hidden;
 }
 
 .parallax-wrap {
@@ -267,7 +266,6 @@ body {
   justify-content: center;
   position: relative;
   will-change: transform;
-  overflow-x: hidden;
 }
 
 .container {

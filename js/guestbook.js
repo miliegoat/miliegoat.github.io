@@ -1,4 +1,4 @@
-import { WORKER_URL, GB_PAGE, GB_MAX } from "./constants.js";
+import { WORKER_URL, GB_PAGE, GB_MAX, TURNSTILE_SITE_KEY } from "./constants.js";
 import { formatTimestamp, escapeHtml } from "./utils.js";
 import { authorToken, setAuthorToken } from "./state.js";
 
@@ -284,13 +284,19 @@ export function initGuestbook() {
       return;
     }
 
+    var token = turnstile.getResponse();
+    if (!token) {
+      if (status) status.textContent = "complete the captcha";
+      return;
+    }
+
     if (status) status.textContent = "posting...";
 
     try {
       const res = await fetch(WORKER_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, message }),
+        body: JSON.stringify({ name, message, turnstileToken: token }),
       });
       if (!res.ok) throw new Error("failed");
       if (status) status.textContent = "posted!";
