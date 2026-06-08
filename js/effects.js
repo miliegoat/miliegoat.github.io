@@ -1,3 +1,8 @@
+import { initAgeDisplay } from "./age.js";
+import { initSmoothScroll } from "./scrolling.js";
+import { initRevealAnimations } from "./revealing.js";
+import { initPreventClicks } from "./prevent-clickings.js";
+
 export function initEffects() {
   initThemeToggle();
   initAgeDisplay();
@@ -24,24 +29,6 @@ function initThemeToggle() {
     document.documentElement.setAttribute("data-theme", next);
     localStorage.setItem("theme", next);
   });
-}
-
-function initAgeDisplay() {
-  var el = document.getElementById("ageDisplay");
-  if (!el) return;
-
-  var birthDate = new Date("2010-08-06T00:00:00");
-
-  function update() {
-    var now = new Date();
-    var diff = now - birthDate;
-    var years = diff / (365.25 * 24 * 60 * 60 * 1000);
-    el.textContent = Math.floor(years);
-    el.setAttribute("data-tooltip", years.toFixed(8));
-  }
-
-  update();
-  setInterval(update, 50);
 }
 
 function initParallax() {
@@ -203,89 +190,4 @@ function initCursorTrail() {
   }
 
   animate();
-}
-
-function initPreventClicks() {
-  document.addEventListener("contextmenu", function (e) {
-    e.preventDefault();
-  });
-  document.addEventListener("dblclick", function (e) {
-    e.preventDefault();
-  });
-}
-
-function initSmoothScroll() {
-  if ("ontouchstart" in window || navigator.maxTouchPoints > 0) return;
-
-  var velocity = 0;
-  var running = false;
-  var eventTimes = [];
-
-  function getScrollParent(el) {
-    while (el && el !== document.body && el !== document.documentElement) {
-      var style = getComputedStyle(el);
-      if (style.overflowY === "auto" || style.overflowY === "scroll") {
-        if (el.scrollHeight > el.clientHeight) return el;
-      }
-      el = el.parentElement;
-    }
-    return null;
-  }
-
-  document.addEventListener(
-    "wheel",
-    function (e) {
-      var sp = getScrollParent(e.target);
-      if (sp) return;
-
-      e.preventDefault();
-      var now = Date.now();
-      eventTimes.push(now);
-      while (eventTimes.length > 0 && eventTimes[0] < now - 80) {
-        eventTimes.shift();
-      }
-      var boost = Math.max(1, Math.min(6, eventTimes.length));
-      var dir = e.deltaY > 0 ? 1 : -1;
-      velocity = dir * 300 * boost;
-      if (!running) {
-        running = true;
-        requestAnimationFrame(frame);
-      }
-    },
-    { passive: false },
-  );
-
-  function frame() {
-    velocity *= 0.78;
-    var oldY = window.scrollY;
-    window.scrollBy(0, velocity);
-
-    if (Math.abs(velocity) < 0.3 || Math.abs(window.scrollY - oldY) < 0.3) {
-      velocity = 0;
-      running = false;
-      return;
-    }
-
-    requestAnimationFrame(frame);
-  }
-}
-
-function initRevealAnimations() {
-  var els = document.querySelectorAll(".reveal");
-  if (!els.length) return;
-
-  function check() {
-    var h = window.innerHeight;
-    els.forEach(function (el) {
-      var r = el.getBoundingClientRect();
-      if (r.top < h - 40 && r.bottom > 40) {
-        el.classList.add("revealed");
-      } else if (r.bottom < -40 || r.top > h + 40) {
-        el.classList.remove("revealed");
-      }
-    });
-  }
-
-  window.addEventListener("scroll", check, { passive: true });
-  check();
 }
