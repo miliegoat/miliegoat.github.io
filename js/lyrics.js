@@ -70,10 +70,19 @@ export function highlightLyric(elapsedMs) {
 export function openLyricsPanel() {
   var panel = document.getElementById("lyricsPanel");
   var main = document.querySelector(".main");
-  var bottom = document.getElementById("bottomSection");
+  var statusSection = document.getElementById("statusSection");
 
   if (panel) {
-    panel.removeAttribute("style");
+    panel.style.display = "";
+    panel.style.maxHeight = "";
+    panel.style.marginTop = "";
+    panel.style.marginBottom = "";
+    panel.style.overflow = "";
+    panel.getBoundingClientRect();
+    panel.style.transition =
+      "opacity 480ms cubic-bezier(0.16, 1, 0.3, 1), transform 480ms cubic-bezier(0.34, 1.2, 0.64, 1)";
+    panel.style.opacity = "1";
+    panel.style.transform = "translateX(0) scale(1)";
     updateLyricsPanel();
     return;
   }
@@ -99,8 +108,11 @@ export function openLyricsPanel() {
     '<div class="lyrics-loading">loading lyrics...</div>' +
     "</div></div>";
 
-  if (bottom) main.insertBefore(panel, bottom);
-  else main.appendChild(panel);
+  if (statusSection && statusSection.nextElementSibling) {
+    main.insertBefore(panel, statusSection.nextElementSibling);
+  } else {
+    main.appendChild(panel);
+  }
   panel.getBoundingClientRect();
 
   panel.style.transition =
@@ -125,7 +137,17 @@ export function closeLyricsPanel() {
   panel.style.opacity = "0";
   panel.style.transform = "translateX(20px) scale(0.98)";
   setTimeout(function () {
-    panel.remove();
+    var h = panel.scrollHeight;
+    panel.style.transition = "max-height 0.3s ease, margin 0.3s ease";
+    panel.style.maxHeight = h + "px";
+    panel.style.overflow = "hidden";
+    panel.getBoundingClientRect();
+    panel.style.maxHeight = "0";
+    panel.style.marginTop = "0";
+    panel.style.marginBottom = "0";
+    setTimeout(function () {
+      panel.style.display = "none";
+    }, 320);
   }, 390);
 }
 

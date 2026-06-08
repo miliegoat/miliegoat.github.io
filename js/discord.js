@@ -287,6 +287,7 @@ function renderSpotifyCard(spotify, trackChanged) {
       clearTimeout(hideSpotifyTimer);
       hideSpotifyTimer = null;
     }
+    spotifyEl.style.cssText = "";
     spotifyEl.className = "";
     spotifyEl.innerHTML =
       '<div class="slide-in">' +
@@ -350,9 +351,20 @@ function hideSpotify() {
   if (spotifyEl && spotifyEl.children.length) {
     spotifyEl.className = "slide-out";
     hideSpotifyTimer = setTimeout(function () {
-      spotifyEl.className = "";
-      spotifyEl.innerHTML = "";
-      hideSpotifyTimer = null;
+      var h = spotifyEl.scrollHeight;
+      spotifyEl.style.transition = "max-height 0.3s ease, margin 0.3s ease";
+      spotifyEl.style.maxHeight = h + "px";
+      spotifyEl.style.overflow = "hidden";
+      spotifyEl.getBoundingClientRect();
+      spotifyEl.style.maxHeight = "0";
+      spotifyEl.style.marginTop = "0";
+      spotifyEl.style.marginBottom = "0";
+      hideSpotifyTimer = setTimeout(function () {
+        spotifyEl.innerHTML = "";
+        spotifyEl.className = "";
+        spotifyEl.style.cssText = "";
+        hideSpotifyTimer = null;
+      }, 320);
     }, 260);
   }
   document.getElementById("localPlayer").style.display = "block";
