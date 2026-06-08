@@ -17,21 +17,43 @@ function initThemeToggle() {
   var toggle = document.getElementById("themeToggle");
   if (!toggle) return;
 
+  var clickMe = document.getElementById("themeClickMe");
+
   var fish = initFish();
 
   var saved = localStorage.getItem("theme");
   if (saved) {
     document.documentElement.setAttribute("data-theme", saved);
   }
+  if (saved === "light" && clickMe) {
+    clickMe.classList.add("hidden");
+  }
   if (saved === "light") fish.start();
 
   toggle.addEventListener("click", function () {
     var current = document.documentElement.getAttribute("data-theme");
     var next = current === "dark" ? "light" : "dark";
+
+    if (next === "light" && clickMe) {
+      clickMe.classList.remove("hidden");
+    }
+
     document.documentElement.setAttribute("data-theme", next);
     localStorage.setItem("theme", next);
-    if (next === "light") fish.start();
-    else fish.stop();
+
+    if (next === "light") {
+      fish.start();
+      if (clickMe) {
+        setTimeout(function () {
+          clickMe.classList.add("hidden");
+        }, 350);
+      }
+    } else {
+      fish.stop();
+      if (clickMe) {
+        clickMe.classList.remove("hidden");
+      }
+    }
   });
 }
 
