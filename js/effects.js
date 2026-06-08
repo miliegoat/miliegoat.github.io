@@ -283,7 +283,7 @@ function initRevealAnimations() {
         }
       });
     },
-    { threshold: 0.1 },
+    { threshold: 0, rootMargin: "-10px 0px -10px 0px" },
   );
 
   document.querySelectorAll(".reveal").forEach(function (el) {
