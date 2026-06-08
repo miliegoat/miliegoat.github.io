@@ -1,6 +1,7 @@
 import { initAgeDisplay } from "./age.js";
 import { initRevealAnimations } from "./revealing.js";
 import { initPreventClicks } from "./prevent-clickings.js";
+import { initFish } from "./fish.js";
 
 export function initEffects() {
   initThemeToggle();
@@ -16,16 +17,21 @@ function initThemeToggle() {
   var toggle = document.getElementById("themeToggle");
   if (!toggle) return;
 
+  var fish = initFish();
+
   var saved = localStorage.getItem("theme");
   if (saved) {
     document.documentElement.setAttribute("data-theme", saved);
   }
+  if (saved === "light") fish.start();
 
   toggle.addEventListener("click", function () {
     var current = document.documentElement.getAttribute("data-theme");
     var next = current === "dark" ? "light" : "dark";
     document.documentElement.setAttribute("data-theme", next);
     localStorage.setItem("theme", next);
+    if (next === "light") fish.start();
+    else fish.stop();
   });
 }
 
