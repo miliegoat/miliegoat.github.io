@@ -272,8 +272,9 @@ export function initGuestbook() {
   if (!form) return;
 
   var turnstileWidgetDiv = document.getElementById("turnstileWidget");
+  var turnstileWidgetId = null;
   if (turnstileWidgetDiv && typeof turnstile !== "undefined") {
-    turnstile.render(turnstileWidgetDiv, {
+    turnstileWidgetId = turnstile.render(turnstileWidgetDiv, {
       sitekey: TURNSTILE_SITE_KEY,
       theme: "auto",
     });
@@ -292,7 +293,7 @@ export function initGuestbook() {
       return;
     }
 
-    var token = turnstile.getResponse();
+    var token = turnstileWidgetId ? turnstile.getResponse(turnstileWidgetId) : "";
     if (!token) {
       if (status) status.textContent = "complete the captcha";
       return;
