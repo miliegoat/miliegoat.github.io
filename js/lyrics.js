@@ -73,25 +73,18 @@ export function openLyricsPanel() {
   var statusSection = document.getElementById("statusSection");
 
   if (panel) {
+    panel.style.cssText = "";
     panel.style.display = "";
-    panel.style.maxHeight = "";
-    panel.style.marginTop = "";
-    panel.style.marginBottom = "";
-    panel.style.overflow = "";
     panel.getBoundingClientRect();
-    panel.style.transition =
-      "opacity 480ms cubic-bezier(0.16, 1, 0.3, 1), transform 480ms cubic-bezier(0.34, 1.2, 0.64, 1)";
-    panel.style.opacity = "1";
-    panel.style.transform = "translateX(0) scale(1)";
+    panel.classList.remove("entering");
+    panel.classList.add("revealed");
     updateLyricsPanel();
     return;
   }
 
   panel = document.createElement("div");
   panel.id = "lyricsPanel";
-  panel.className = "lyrics-side-panel";
-  panel.style.cssText =
-    "opacity:0; transform:translateX(20px) scale(0.98); transition:none;";
+  panel.className = "lyrics-side-panel reveal entering";
   panel.innerHTML =
     "" +
     '<div class="lw-titlebar">' +
@@ -115,10 +108,10 @@ export function openLyricsPanel() {
   }
   panel.getBoundingClientRect();
 
-  panel.style.transition =
-    "opacity 480ms cubic-bezier(0.16, 1, 0.3, 1), transform 480ms cubic-bezier(0.34, 1.2, 0.64, 1)";
-  panel.style.opacity = "1";
-  panel.style.transform = "translateX(0) scale(1)";
+  setTimeout(function () {
+    panel.classList.remove("entering");
+    panel.classList.add("revealed");
+  }, 500);
 
   updateLyricsPanel();
 
