@@ -219,6 +219,7 @@ function initSmoothScroll() {
 
   var velocity = 0;
   var running = false;
+  var eventTimes = [];
 
   function getScrollParent(el) {
     while (el && el !== document.body && el !== document.documentElement) {
@@ -238,7 +239,14 @@ function initSmoothScroll() {
       if (sp) return;
 
       e.preventDefault();
-      velocity = e.deltaY > 0 ? 400 : -400;
+      var now = Date.now();
+      eventTimes.push(now);
+      while (eventTimes.length > 0 && eventTimes[0] < now - 80) {
+        eventTimes.shift();
+      }
+      var boost = Math.max(1, Math.min(6, eventTimes.length));
+      var dir = e.deltaY > 0 ? 1 : -1;
+      velocity = dir * 300 * boost;
       if (!running) {
         running = true;
         requestAnimationFrame(frame);
@@ -248,7 +256,7 @@ function initSmoothScroll() {
   );
 
   function frame() {
-    velocity *= 0.97;
+    velocity *= 0.78;
     var oldY = window.scrollY;
     window.scrollBy(0, velocity);
 
