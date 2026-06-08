@@ -1,5 +1,4 @@
 import { initAgeDisplay } from "./age.js";
-import { initSmoothScroll } from "./scrolling.js";
 import { initRevealAnimations } from "./revealing.js";
 import { initPreventClicks } from "./prevent-clickings.js";
 
@@ -10,7 +9,6 @@ export function initEffects() {
   initClickEffect();
   initCursorTrail();
   initPreventClicks();
-  initSmoothScroll();
   initRevealAnimations();
 }
 
