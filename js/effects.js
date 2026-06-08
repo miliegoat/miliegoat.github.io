@@ -223,10 +223,7 @@ function initSmoothScroll() {
   function getScrollParent(el) {
     while (el && el !== document.body && el !== document.documentElement) {
       var style = getComputedStyle(el);
-      if (
-        style.overflowY === "auto" ||
-        style.overflowY === "scroll"
-      ) {
+      if (style.overflowY === "auto" || style.overflowY === "scroll") {
         if (el.scrollHeight > el.clientHeight) return el;
       }
       el = el.parentElement;
