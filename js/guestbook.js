@@ -307,7 +307,19 @@ export function initGuestbook() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, message, turnstileToken: token }),
       });
-      if (!res.ok) throw new Error("failed");
+      if (!res.ok) {
+        var errMsg = "could not post, try again later.";
+        if (res.status === 403) {
+          try {
+            var errBody = await res.json();
+            if (errBody.error === "captcha verification failed") {
+              errMsg = "captcha failed — turn off your vpn or try again later";
+            }
+          } catch {}
+        }
+        if (status) status.textContent = errMsg;
+        return;
+      }
       if (status) status.textContent = "posted!";
       if (nameInput) nameInput.value = "";
       if (messageInput) messageInput.value = "";
