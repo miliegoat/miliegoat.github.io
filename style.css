@@ -835,6 +835,15 @@ body {
 
 .guestbook-form { margin-bottom: 12px; }
 
+#turnstileWidget {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+}
+
 .guestbook-row {
   display: flex;
   gap: 6px;
