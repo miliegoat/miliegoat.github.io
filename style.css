@@ -986,6 +986,15 @@ body {
   transform: translateY(0) scale(1);
 }
 
+.lyrics-side-panel.entering {
+  animation: lyricsSlideIn 0.48s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes lyricsSlideIn {
+  from { opacity: 0; transform: translateX(20px) scale(0.98); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
 .cursor-trail {
   position: fixed;
   pointer-events: none;
