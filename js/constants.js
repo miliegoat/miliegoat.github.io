@@ -30,7 +30,5 @@ export const BLOCKED_ACTIVITIES = [
   "1307468756590792704",
 ];
 
-export const YT_API_KEY = "AIzaSyB4t18EPL0XTE7nqbu9OcHZnv4NiyvhsjE";
-
 export const GB_PAGE = 4;
 export const GB_MAX = 500;

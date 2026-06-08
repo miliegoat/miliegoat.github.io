@@ -22,13 +22,11 @@ import {
   closeLyricsPanel,
   highlightLyric,
 } from "./lyrics.js";
-import { searchAndPlayYouTube, destroyYTPlayer } from "./youtube.js";
 
 const MARK_TV = "\uD83D\uDCFA";
 const MARK_GAME = "\uD83C\uDFAE";
 const MARK_HAMSTER = "\uD83D\uDC39";
 const MARK_LEAF = "\uD83C\uDF41";
-const MARK_PLAY = "\u25B6";
 const MARK_NOTE = "\u266B";
 const MARK_ERROR = "\u2715";
 
@@ -299,15 +297,6 @@ function renderSpotifyCard(spotify, trackChanged) {
       q("none") +
       '"/>' +
       '<div class="activity-info">' +
-      '<div class="activity-type" style="display:flex;justify-content:space-between;align-items:center;">' +
-      '<span style="display:flex;align-items:center;gap:4px;">' +
-      '<svg width="11" height="11" viewBox="0 0 24 24" fill="#1db954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>' +
-      "listening to spotify" +
-      "</span>" +
-      '<button id="playAlongBtn" onclick="window.togglePlayAlong()" data-state="idle" style="background:var(--bg-surface);border:1px solid var(--border);border-radius:999px;color:var(--text-muted);font-size:10px;font-weight:700;font-family:var(--font);padding:4px 10px;cursor:pointer;transition:all 0.2s ease;letter-spacing:0.03em;">' +
-      MARK_PLAY +
-      " play along</button>" +
-      "</div>" +
       '<a href="' +
       trackUrl +
       '" target="_blank" class="activity-name">' +
@@ -336,7 +325,6 @@ function renderSpotifyCard(spotify, trackChanged) {
     document.getElementById("lyricsContent").innerHTML =
       '<div class="lyrics-loading">loading lyrics...</div>';
     fetchLyrics(spotify);
-    searchAndPlayYouTube(spotify);
   }
 }
 
@@ -367,11 +355,9 @@ function hideSpotify() {
       }, 320);
     }, 260);
   }
-  document.getElementById("localPlayer").style.display = "block";
   setCurrentTrackId(null);
   setCurrentSpotifyData(null);
   setCurrentLyrics([]);
-  destroyYTPlayer();
   closeLyricsPanel();
 }
 
@@ -380,10 +366,7 @@ export async function updateProfile(data) {
   clearInterval(spotifyProgressInterval);
   await renderGameActivities(data.activities);
 
-  const localPlayer = document.getElementById("localPlayer");
-
   if (data.listening_to_spotify && data.spotify) {
-    localPlayer.style.display = "none";
     const trackChanged = data.spotify.track_id !== currentTrackId;
     setCurrentTrackId(data.spotify.track_id);
     setCurrentSpotifyData(data.spotify);
