@@ -159,11 +159,9 @@ async function renderGameActivities(activities) {
           ? '<img src="' +
             iconUrl +
             '" class="activity-art" loading="lazy" onerror="this.outerHTML=' +
-            q(
-              "<div class=&quot;activity-art-placeholder&quot;>" +
-                icon +
-                "</div>",
-            ) +
+            "'<div class=&quot;activity-art-placeholder&quot;>" +
+            icon +
+            "</div>'" +
             '"/>'
           : '<div class="activity-art-placeholder">' + icon + "</div>";
         return (
@@ -173,9 +171,6 @@ async function renderGameActivities(activities) {
           '<div class="activity-inner">' +
           iconHtml +
           '<div class="activity-info">' +
-          '<div class="activity-type">' +
-          (activity.type === 3 ? "watching" : "playing") +
-          "</div>" +
           '<div class="activity-name">' +
           escapeAttr(activity.name) +
           "</div>" +
