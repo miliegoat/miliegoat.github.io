@@ -653,7 +653,7 @@ body {
 
 .activity-type {
   font-size: 10px;
-  text-transform: uppercase;
+  text-transform: lowercase;
   letter-spacing: 0.06em;
   color: var(--green);
   font-weight: 700;
