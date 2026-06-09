@@ -200,18 +200,4 @@ export function fetchLyrics(spotify) {
   }
 }
 
-export function toggleLyrics() {
-  var lyricsOpen =
-    !document.getElementById("lyricsPanel") ||
-    document.getElementById("lyricsPanel").style.display === "none";
-  if (lyricsOpen) {
-    if (currentSpotifyData && currentLyrics.length === 0) {
-      document.getElementById("lyricsContent").innerHTML =
-        '<div class="lyrics-loading">loading lyrics...</div>';
-      fetchLyrics(currentSpotifyData);
-    }
-    openLyricsPanel();
-  } else {
-    closeLyricsPanel();
-  }
-}
+

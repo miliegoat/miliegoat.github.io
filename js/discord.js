@@ -25,10 +25,6 @@ import {
 
 const MARK_TV = "\uD83D\uDCFA";
 const MARK_GAME = "\uD83C\uDFAE";
-const MARK_HAMSTER = "\uD83D\uDC39";
-const MARK_LEAF = "\uD83C\uDF41";
-const MARK_NOTE = "\u266B";
-const MARK_ERROR = "\u2715";
 
 let profileUpdateTimeout = null;
 let gameActivityInterval = null;
@@ -228,9 +224,7 @@ function renderProfileCard(discord_user, discord_status, activities) {
     ";this.nextElementSibling.style.display=" +
     q("flex") +
     '" loading="lazy"/>' +
-    '<div class="avatar-placeholder" style="display:none;">' +
-    MARK_HAMSTER +
-    "</div>" +
+    '<div class="avatar-placeholder" style="display:none;"></div>' +
     '<div class="status-icon" title="' +
     statusLabel +
     '">' +
@@ -356,9 +350,120 @@ function hideSpotify() {
   closeLyricsPanel();
 }
 
+function getAvatarUrl(user) {
+  return user.avatar
+    ? "https://cdn.discordapp.com/avatars/" +
+      user.id +
+      "/" +
+      user.avatar +
+      "." +
+      (user.avatar.startsWith("a_") ? "gif" : "png") +
+      "?size=128"
+    : "https://cdn.discordapp.com/embed/avatars/" +
+      (Number(user.discriminator || 0) % 5) +
+      ".png";
+}
+
+function rgbToHex(r, g, b) {
+  return "#" + [r, g, b].map(function (c) { return c.toString(16).padStart(2, "0"); }).join("");
+}
+
+function boostSaturation(r, g, b, amount) {
+  var gray = 0.2989 * r + 0.5870 * g + 0.1140 * b;
+  r = Math.round(r + (r - gray) * amount);
+  g = Math.round(g + (g - gray) * amount);
+  b = Math.round(b + (b - gray) * amount);
+  return [
+    Math.max(0, Math.min(255, r)),
+    Math.max(0, Math.min(255, g)),
+    Math.max(0, Math.min(255, b))
+  ];
+}
+
+function extractColor(url) {
+  return new Promise(function (resolve) {
+    var img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = function () {
+      var canvas = document.createElement("canvas");
+      var ctx = canvas.getContext("2d");
+      var size = 5;
+      canvas.width = size;
+      canvas.height = size;
+      ctx.drawImage(img, 0, 0, size, size);
+      var data = ctx.getImageData(0, 0, size, size).data;
+      var totalR = 0, totalG = 0, totalB = 0, count = 0;
+      for (var i = 0; i < data.length; i += 4) {
+        totalR += data[i];
+        totalG += data[i + 1];
+        totalB += data[i + 2];
+        count++;
+      }
+      var r = Math.round(totalR / count);
+      var g = Math.round(totalG / count);
+      var b = Math.round(totalB / count);
+      var boosted = boostSaturation(r, g, b, 0.8);
+      var hex = rgbToHex(boosted[0], boosted[1], boosted[2]);
+      localStorage.setItem("accentColor", hex);
+      resolve(hex);
+    };
+    img.onerror = function () { resolve(null); };
+    var staticUrl = url.includes("?") ? url.replace(/size=\d+/, "size=32") : url + "?size=32";
+    if (url.includes("gif")) {
+      staticUrl = url.replace(/\.gif\?/, ".png?").replace(/\?size=\d+/, "?size=32");
+    }
+    img.src = staticUrl;
+  });
+}
+
+function ensureContrast(hex) {
+  var r = parseInt(hex.slice(1, 3), 16);
+  var g = parseInt(hex.slice(3, 5), 16);
+  var b = parseInt(hex.slice(5, 7), 16);
+  var lum = 0.2126 * (r / 255) + 0.7152 * (g / 255) + 0.0722 * (b / 255);
+  var isLight = document.documentElement.getAttribute("data-theme") === "light";
+  var threshold = isLight ? 0.45 : 0.08;
+  if (isLight ? lum > threshold : lum < threshold) {
+    var factor = isLight ? threshold / Math.max(lum, 0.01) : (1 - threshold) / Math.max(1 - lum, 0.01);
+    r = Math.round(r + (r - 128) * (factor - 1));
+    g = Math.round(g + (g - 128) * (factor - 1));
+    b = Math.round(b + (b - 128) * (factor - 1));
+    return rgbToHex(Math.max(0, Math.min(255, r)), Math.max(0, Math.min(255, g)), Math.max(0, Math.min(255, b)));
+  }
+  return hex;
+}
+
+function darkenHex(hex, amount) {
+  var r = parseInt(hex.slice(1, 3), 16);
+  var g = parseInt(hex.slice(3, 5), 16);
+  var b = parseInt(hex.slice(5, 7), 16);
+  r = Math.round(r * (1 - amount));
+  g = Math.round(g * (1 - amount));
+  b = Math.round(b * (1 - amount));
+  return rgbToHex(Math.max(0, Math.min(255, r)), Math.max(0, Math.min(255, g)), Math.max(0, Math.min(255, b)));
+}
+
+var currentAccentHex = localStorage.getItem("accentColor") || null;
+if (currentAccentHex) applyProfileColor(currentAccentHex);
+
+function applyProfileColor(hex) {
+  if (!hex) return;
+  currentAccentHex = hex;
+  hex = ensureContrast(hex);
+  document.documentElement.style.setProperty("--accent", hex);
+  document.documentElement.style.setProperty("--accent-dim", darkenHex(hex, 0.25));
+  document.documentElement.style.setProperty("--green", hex);
+}
+
+var themeObserver = new MutationObserver(function () {
+  if (currentAccentHex) applyProfileColor(currentAccentHex);
+});
+themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
 export async function updateProfile(data) {
   renderProfileCard(data.discord_user, data.discord_status, data.activities);
   clearInterval(spotifyProgressInterval);
+  extractColor(getAvatarUrl(data.discord_user)).then(applyProfileColor);
   await renderGameActivities(data.activities);
 
   if (data.listening_to_spotify && data.spotify) {

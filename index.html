@@ -11,7 +11,10 @@
     />
     <link rel="stylesheet" href="style.css" />
     <link rel="icon" href="favicon.ico" />
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>
+    <script
+      src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+      defer
+    ></script>
   </head>
   <body>
     <div class="parallax-wrap">
@@ -81,8 +84,10 @@
                   target="_blank"
                   >discord</a
                 >
-                a lot, you can see my discord down below. i mostly listen to
-                <b>hip hop</b>, <b>trap</b>, <b>pluggnb</b>, and <b>rock</b>.
+                a lot, you can click the discord text to find it. i mostly
+                listen to
+                <b>trap</b>, <b>pluggnb</b>, <b>rock</b>, <b>alt rock</b>, and
+                <b>indie</b>.
               </p>
             </div>
 
@@ -159,10 +164,7 @@
               </div>
             </section>
 
-            <div
-              id="guestbookCard"
-              class="guestbook-panel guestbook-visible reveal"
-            >
+            <div id="guestbookCard" class="guestbook-panel reveal">
               <form id="guestbookForm" class="guestbook-form">
                 <div class="guestbook-row">
                   <input
@@ -180,20 +182,14 @@
                     placeholder="write something"
                     required
                   />
-                  <button
-                    type="submit"
-                    id="guestbookSubmit"
-                    class="guestbook-submit"
-                  >
-                    post
-                  </button>
+                  <button type="submit" class="guestbook-submit">post</button>
                 </div>
                 <div id="turnstileWidget"></div>
               </form>
               <div id="guestbookEntries" class="guestbook-entries"></div>
             </div>
 
-            <div id="bottomSection">
+            <div>
               <div class="badges-row reveal">
                 <img src="media/jesus_now.gif" alt="badge" />
                 <img src="media/badge1.png" alt="badge" />
@@ -208,8 +204,6 @@
       </div>
     </div>
 
-    <audio id="audio" src="media/ohquesera.mp3" preload="metadata"></audio>
-    <div id="localPlayer" style="display: none"></div>
     <div id="lyricsContent" hidden></div>
 
     <script type="module" src="js/main.js"></script>
