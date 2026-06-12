@@ -21,9 +21,6 @@ function renderGuestbookEntries(entries) {
 
   const liked = JSON.parse(localStorage.getItem("gb_liked") || "{}");
 
-  container.classList.remove("gb-enter");
-  void container.offsetWidth;
-  container.classList.add("gb-enter");
   container.innerHTML = entries
     .map(function (entry, i) {
       const userLiked = liked[entry.id];
@@ -77,7 +74,7 @@ function showScrollHint() {
   const hint = document.createElement("div");
   hint.className = "guestbook-scroll-hint";
   hint.textContent = "↓ scroll to see new entries";
-  container.parentElement.appendChild(hint);
+  container.appendChild(hint);
   setTimeout(function () {
     hint.classList.add("guestbook-scroll-hint--fade");
     setTimeout(function () {
