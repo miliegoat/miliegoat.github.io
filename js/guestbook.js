@@ -21,6 +21,9 @@ function renderGuestbookEntries(entries) {
 
   const liked = JSON.parse(localStorage.getItem("gb_liked") || "{}");
 
+  container.classList.remove("gb-enter");
+  void container.offsetWidth;
+  container.classList.add("gb-enter");
   container.innerHTML = entries
     .map(function (entry, i) {
       const userLiked = liked[entry.id];

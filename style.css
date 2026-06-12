@@ -792,6 +792,15 @@ body {
 
 .guestbook-entries::-webkit-scrollbar { display: none; }
 
+.guestbook-entries.gb-enter {
+  animation: gbEntriesIn 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes gbEntriesIn {
+  from { opacity: 0.6; transform: scaleY(0.97); }
+  to { opacity: 1; transform: scaleY(1); }
+}
+
 .guestbook-entry {
   padding: 10px 0;
   border-bottom: 1px solid var(--border);
