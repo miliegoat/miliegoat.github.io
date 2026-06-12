@@ -65,6 +65,23 @@ function renderGuestbookEntries(entries) {
   updateLoadMore();
 }
 
+function showScrollHint() {
+  const container = document.getElementById("guestbookEntries");
+  if (!container) return;
+  if (container.scrollHeight <= container.clientHeight) return;
+
+  const hint = document.createElement("div");
+  hint.className = "guestbook-scroll-hint";
+  hint.textContent = "↓ scroll to see new entries";
+  container.parentElement.appendChild(hint);
+  setTimeout(function () {
+    hint.classList.add("guestbook-scroll-hint--fade");
+    setTimeout(function () {
+      hint.remove();
+    }, 600);
+  }, 2500);
+}
+
 function updateLoadMore() {
   const container = document.getElementById("guestbookEntries");
   const hasMore = gbOffset + GB_PAGE < Math.min(gbTotal, GB_MAX);
@@ -90,6 +107,11 @@ async function fetchGuestbookEntries() {
   const status = document.getElementById("guestbookStatus");
   if (status) status.textContent = "loading...";
 
+  const container = document.getElementById("guestbookEntries");
+  if (container)
+    container.innerHTML =
+      '<div class="guestbook-loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
+
   try {
     const res = await fetch(WORKER_URL + "?limit=" + GB_PAGE + "&offset=0");
     if (!res.ok) throw new Error("failed");
@@ -97,6 +119,7 @@ async function fetchGuestbookEntries() {
     gbAllEntries = data.entries || [];
     gbTotal = data.total || 0;
     renderGuestbookEntries(gbAllEntries);
+    showScrollHint();
     const total = Math.min(gbTotal, GB_MAX);
     if (status)
       status.textContent = total + " message" + (total === 1 ? "" : "s");
@@ -110,6 +133,12 @@ async function fetchGuestbookEntries() {
 async function loadMoreGuestbookEntries() {
   const newOffset = gbOffset + GB_PAGE;
   if (newOffset >= GB_MAX) return;
+
+  const loadMoreBtn = document.getElementById("gbLoadMore");
+  if (loadMoreBtn) {
+    loadMoreBtn.disabled = true;
+    loadMoreBtn.textContent = "loading...";
+  }
 
   try {
     const res = await fetch(
@@ -166,6 +195,12 @@ async function loadMoreGuestbookEntries() {
       .join("");
     container.insertAdjacentHTML("beforeend", html);
     updateLoadMore();
+    showScrollHint();
+    const loadMoreBtnDone = document.getElementById("gbLoadMore");
+    if (loadMoreBtnDone) {
+      loadMoreBtnDone.disabled = false;
+      loadMoreBtnDone.textContent = "load more";
+    }
     const status = document.getElementById("guestbookStatus");
     const total = Math.min(gbTotal, GB_MAX);
     if (status)
@@ -173,6 +208,11 @@ async function loadMoreGuestbookEntries() {
   } catch {
     const status = document.getElementById("guestbookStatus");
     if (status) status.textContent = "could not load more";
+    const loadMoreBtnErr = document.getElementById("gbLoadMore");
+    if (loadMoreBtnErr) {
+      loadMoreBtnErr.disabled = false;
+      loadMoreBtnErr.textContent = "load more";
+    }
   }
 }
 
