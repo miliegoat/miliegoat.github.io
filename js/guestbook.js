@@ -69,6 +69,7 @@ function showScrollHint() {
   const container = document.getElementById("guestbookEntries");
   if (!container) return;
   if (container.scrollHeight <= container.clientHeight) return;
+  if (container.parentElement.querySelector(".guestbook-scroll-hint")) return;
 
   const hint = document.createElement("div");
   hint.className = "guestbook-scroll-hint";
@@ -119,7 +120,6 @@ async function fetchGuestbookEntries() {
     gbAllEntries = data.entries || [];
     gbTotal = data.total || 0;
     renderGuestbookEntries(gbAllEntries);
-    showScrollHint();
     const total = Math.min(gbTotal, GB_MAX);
     if (status)
       status.textContent = total + " message" + (total === 1 ? "" : "s");
