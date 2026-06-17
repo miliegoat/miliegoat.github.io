@@ -909,3 +909,16 @@ body {
   40% { transform: scale(1.35); }
   100% { transform: scale(1); }
 }
+
+.gb-scroll-hint {
+  text-align: center;
+  padding: 8px;
+  font-size: 10px;
+  color: #a78bfa;
+  opacity: 1;
+  transition: opacity 0.6s ease;
+}
+
+.gb-scroll-hint--fade {
+  opacity: 0;
+}

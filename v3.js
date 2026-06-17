@@ -746,6 +746,7 @@ var TURNSTILE_SITE_KEY = '0x4AAAAAADg6LkYattvc_Fqe';
 var turnstileWidgetId = null;
 var authorToken = sessionStorage.getItem('author_token') || null;
 var gbKeyBuffer = '';
+var scrollHintShown = false;
 
 function escapeHtml(str) {
   var div = document.createElement('div');
@@ -803,7 +804,7 @@ function updateLoadMore() {
       loadMoreBtn.className = 'guestbook-load-more';
       loadMoreBtn.textContent = 'load more';
       loadMoreBtn.addEventListener('click', loadMoreGuestbookEntries);
-      container.after(loadMoreBtn);
+      container.appendChild(loadMoreBtn);
     }
   } else if (loadMoreBtn) {
     loadMoreBtn.remove();
@@ -865,6 +866,15 @@ async function loadMoreGuestbookEntries() {
     }).join('');
     container.insertAdjacentHTML('beforeend', html);
     updateLoadMore();
+    if (!scrollHintShown && container.scrollHeight > container.clientHeight) {
+      scrollHintShown = true;
+      var hint = document.createElement('div');
+      hint.className = 'gb-scroll-hint';
+      hint.textContent = '\u2193 scroll to see new entries';
+      container.appendChild(hint);
+      setTimeout(function () { hint.classList.add('gb-scroll-hint--fade'); }, 2500);
+      setTimeout(function () { hint.remove(); }, 3100);
+    }
     var doneBtn = document.getElementById('gbLoadMore');
     if (doneBtn) { doneBtn.disabled = false; doneBtn.textContent = 'load more'; }
     var status = document.getElementById('guestbookStatus');
