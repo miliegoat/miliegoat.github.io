@@ -93,7 +93,6 @@ function preloadBackgrounds() {
   function done() {
     if (pending === 0) {
       bgReady = true;
-      setBackground();
       detectBgVideos();
     }
   }
@@ -244,7 +243,6 @@ function setBackground() {
   if (period !== currentPeriod) {
     var prevPeriod = currentPeriod;
     currentPeriod = period;
-    if (!bgReady) return;
     var entry = getRandomBg() || { type: 'img', path: getFallbackBg() };
     if (prevPeriod === null) {
       applyBgEntry(entry);
