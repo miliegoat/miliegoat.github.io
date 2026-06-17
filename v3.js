@@ -744,6 +744,8 @@ var GB_MAX = 500;
 var WORKER_URL = 'https://snowy-dust-17c3.asdwaawdawd81.workers.dev/';
 var TURNSTILE_SITE_KEY = '0x4AAAAAADg6LkYattvc_Fqe';
 var turnstileWidgetId = null;
+var authorToken = sessionStorage.getItem('author_token') || null;
+var gbKeyBuffer = '';
 
 function escapeHtml(str) {
   var div = document.createElement('div');
@@ -752,22 +754,31 @@ function escapeHtml(str) {
 }
 
 function formatTimestamp(ts) {
+  if (!ts) return '';
   var d = new Date(ts);
-  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
 }
 
 function renderGuestbookEntries(entries) {
-  var container = document.getElementById('gbBody');
+  var container = document.getElementById('guestbookEntries');
   if (!container) return;
   if (!entries.length) {
-    container.innerHTML = '<div class="gb-empty">no entries yet</div>';
+    container.innerHTML = '<div class="gb-empty">no entries yet — be the first!</div>';
+    updateLoadMore();
     return;
   }
   var liked = JSON.parse(localStorage.getItem('gb_liked') || '{}');
-  container.innerHTML = entries.map(function (entry) {
+  container.innerHTML = entries.map(function (entry, i) {
     var userLiked = liked[entry.id];
     var likeIcon = userLiked ? '\u2665' : '\u2661';
-    return '<div class="gb-entry">' +
+    var authorBadge = entry.liked_by_author ? '<span class="author-like-badge">\u2665 liked by author</span>' : '';
+    var animDelay = (i * 0.06).toFixed(2);
+    return '<div class="gb-entry" style="animation-delay:' + animDelay + 's">' +
       '<div class="gb-entry-title">' + escapeHtml(entry.name || 'anonymous') + '</div>' +
       '<div class="gb-entry-body">' + escapeHtml(entry.message || '') + '</div>' +
       '<div class="gb-entry-footer">' +
@@ -775,14 +786,36 @@ function renderGuestbookEntries(entries) {
       '<span class="gb-entry-actions">' +
       '<button class="gb-like-btn ' + (userLiked ? 'liked' : '') + '" data-id="' + entry.id + '">' + likeIcon + '</button>' +
       '<span class="gb-like-count">' + (entry.likes || 0) + '</span>' +
+      authorBadge +
       '</span></div></div>';
   }).join('');
+  updateLoadMore();
+}
+
+function updateLoadMore() {
+  var container = document.getElementById('guestbookEntries');
+  var hasMore = gbOffset + GB_PAGE < Math.min(gbTotal, GB_MAX);
+  var loadMoreBtn = document.getElementById('gbLoadMore');
+  if (hasMore) {
+    if (!loadMoreBtn) {
+      loadMoreBtn = document.createElement('button');
+      loadMoreBtn.id = 'gbLoadMore';
+      loadMoreBtn.className = 'guestbook-load-more';
+      loadMoreBtn.textContent = 'load more';
+      loadMoreBtn.addEventListener('click', loadMoreGuestbookEntries);
+      container.after(loadMoreBtn);
+    }
+  } else if (loadMoreBtn) {
+    loadMoreBtn.remove();
+  }
 }
 
 async function fetchGuestbookEntries() {
   gbOffset = 0;
   gbAllEntries = [];
-  var container = document.getElementById('gbBody');
+  var status = document.getElementById('guestbookStatus');
+  if (status) status.textContent = 'loading...';
+  var container = document.getElementById('guestbookEntries');
   if (container) container.innerHTML = '<div class="gb-loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
   try {
     var res = await fetch(WORKER_URL + '?limit=' + GB_PAGE + '&offset=0');
@@ -792,9 +825,56 @@ async function fetchGuestbookEntries() {
     gbTotal = data.total || 0;
     renderGuestbookEntries(gbAllEntries);
     var total = Math.min(gbTotal, GB_MAX);
-    document.getElementById('gbCount').textContent = total + ' message' + (total === 1 ? '' : 's');
+    if (status) status.textContent = total + ' message' + (total === 1 ? '' : 's');
   } catch {
-    if (container) container.innerHTML = '<div class="gb-empty">could not load</div>';
+    if (status) status.textContent = 'could not load';
+    if (container) container.innerHTML = '<div class="gb-empty">guestbook is unavailable right now.</div>';
+  }
+}
+
+async function loadMoreGuestbookEntries() {
+  var newOffset = gbOffset + GB_PAGE;
+  if (newOffset >= GB_MAX) return;
+  var loadMoreBtn = document.getElementById('gbLoadMore');
+  if (loadMoreBtn) { loadMoreBtn.disabled = true; loadMoreBtn.textContent = 'loading...'; }
+  try {
+    var res = await fetch(WORKER_URL + '?limit=' + GB_PAGE + '&offset=' + newOffset);
+    if (!res.ok) throw new Error('failed');
+    var data = await res.json();
+    var more = data.entries || [];
+    gbAllEntries = gbAllEntries.concat(more);
+    gbOffset = newOffset;
+    var container = document.getElementById('guestbookEntries');
+    var liked = JSON.parse(localStorage.getItem('gb_liked') || '{}');
+    var startIdx = gbAllEntries.length - more.length;
+    var html = more.map(function (entry, i) {
+      var userLiked = liked[entry.id];
+      var likeIcon = userLiked ? '\u2665' : '\u2661';
+      var authorBadge = entry.liked_by_author ? '<span class="author-like-badge">\u2665 liked by author</span>' : '';
+      var animDelay = ((startIdx + i) * 0.06).toFixed(2);
+      return '<div class="gb-entry" style="animation-delay:' + animDelay + 's">' +
+        '<div class="gb-entry-title">' + escapeHtml(entry.name || 'anonymous') + '</div>' +
+        '<div class="gb-entry-body">' + escapeHtml(entry.message || '') + '</div>' +
+        '<div class="gb-entry-footer">' +
+        '<span class="gb-entry-meta">' + formatTimestamp(entry.created_at) + '</span>' +
+        '<span class="gb-entry-actions">' +
+        '<button class="gb-like-btn ' + (userLiked ? 'liked' : '') + '" data-id="' + entry.id + '">' + likeIcon + '</button>' +
+        '<span class="gb-like-count">' + (entry.likes || 0) + '</span>' +
+        authorBadge +
+        '</span></div></div>';
+    }).join('');
+    container.insertAdjacentHTML('beforeend', html);
+    updateLoadMore();
+    var doneBtn = document.getElementById('gbLoadMore');
+    if (doneBtn) { doneBtn.disabled = false; doneBtn.textContent = 'load more'; }
+    var status = document.getElementById('guestbookStatus');
+    var total = Math.min(gbTotal, GB_MAX);
+    if (status) status.textContent = total + ' message' + (total === 1 ? '' : 's');
+  } catch {
+    var status = document.getElementById('guestbookStatus');
+    if (status) status.textContent = 'could not load more';
+    var errBtn = document.getElementById('gbLoadMore');
+    if (errBtn) { errBtn.disabled = false; errBtn.textContent = 'load more'; }
   }
 }
 
@@ -802,67 +882,147 @@ function toggleLike(entryId) {
   var liked = JSON.parse(localStorage.getItem('gb_liked') || '{}');
   var isLiked = liked[entryId];
   var action = isLiked ? 'unlike' : 'like';
+  var body = { action: action, id: entryId };
+  if (authorToken) body.token = authorToken;
   fetch(WORKER_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: action, id: entryId }),
-  }).then(function (res) { return res.json(); }).then(function (result) {
+    body: JSON.stringify(body),
+  }).then(function (res) {
+    if (!res.ok) throw new Error('failed');
+    return res.json();
+  }).then(function (result) {
     if (!result.ok) return;
     if (action === 'like') liked[entryId] = true;
     else delete liked[entryId];
     localStorage.setItem('gb_liked', JSON.stringify(liked));
-    gbAllEntries.forEach(function (e) {
-      if (String(e.id) === entryId) { e.likes = result.likes; e.liked_by_author = result.liked_by_author; }
-    });
+    for (var i = 0; i < gbAllEntries.length; i++) {
+      if (String(gbAllEntries[i].id) === entryId) {
+        gbAllEntries[i].likes = result.likes;
+        if (result.liked_by_author) gbAllEntries[i].liked_by_author = true;
+        else if (authorToken && action === 'unlike') gbAllEntries[i].liked_by_author = false;
+        break;
+      }
+    }
     renderGuestbookEntries(gbAllEntries);
   }).catch(function () {});
 }
 
+function authenticateAuthor() {
+  if (authorToken) {
+    authorToken = null;
+    sessionStorage.removeItem('author_token');
+    return;
+  }
+  var password = prompt('enter author password:');
+  if (!password) return;
+  fetch(WORKER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'auth', password: password }),
+  }).then(function (res) { return res.json(); }).then(function (data) {
+    if (data.ok && data.token) {
+      authorToken = data.token;
+      sessionStorage.setItem('author_token', data.token);
+    } else {
+      alert('incorrect password');
+    }
+  }).catch(function () { alert('authentication failed'); });
+}
+
 function initGuestbook() {
+  var overlay = document.getElementById('guestbookOverlay');
   document.getElementById('guestbookBtn').addEventListener('click', function () {
-    var overlay = document.getElementById('guestbookOverlay');
     overlay.classList.remove('hidden');
     if (!overlay.dataset.loaded) {
       overlay.dataset.loaded = 'true';
       fetchGuestbookEntries();
-    }
-    if (!turnstileWidgetId && typeof turnstile !== 'undefined') {
-      turnstileWidgetId = turnstile.render('turnstileWidget', {
-        sitekey: TURNSTILE_SITE_KEY,
-        theme: 'dark',
-      });
+      var turnstileWidgetDiv = document.getElementById('turnstileWidget');
+      if (turnstileWidgetDiv && typeof turnstile !== 'undefined') {
+        turnstileWidgetId = turnstile.render(turnstileWidgetDiv, {
+          sitekey: TURNSTILE_SITE_KEY,
+          theme: 'auto',
+        });
+      }
     }
   });
   document.getElementById('gbClose').addEventListener('click', function () {
-    document.getElementById('guestbookOverlay').classList.add('hidden');
+    overlay.classList.add('hidden');
   });
-  document.getElementById('guestbookOverlay').addEventListener('click', function (e) {
+  overlay.addEventListener('click', function (e) {
     if (e.target === this) this.classList.add('hidden');
   });
-  document.getElementById('gbBody').addEventListener('click', function (e) {
-    var btn = e.target.closest('.gb-like-btn');
-    if (btn) toggleLike(btn.dataset.id);
+  var entriesContainer = document.getElementById('guestbookEntries');
+  if (entriesContainer) {
+    entriesContainer.addEventListener('click', function (e) {
+      var btn = e.target.closest('.gb-like-btn');
+      if (btn) {
+        btn.classList.add('like-pop');
+        setTimeout(function () { btn.classList.remove('like-pop'); }, 400);
+        toggleLike(btn.dataset.id);
+      }
+    });
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key.length === 1) {
+      gbKeyBuffer += e.key.toLowerCase();
+      if (gbKeyBuffer.length > 9) gbKeyBuffer = gbKeyBuffer.slice(-9);
+      if (gbKeyBuffer === 'iamauthor') {
+        gbKeyBuffer = '';
+        authenticateAuthor();
+      }
+    }
   });
-  document.getElementById('gbForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
-    var nameInput = document.getElementById('gbName');
-    var messageInput = document.getElementById('gbMessage');
+  var form = document.getElementById('guestbookForm');
+  if (!form) return;
+  var turnstileWidgetDiv = document.getElementById('turnstileWidget');
+  if (turnstileWidgetDiv && typeof turnstile !== 'undefined') {
+    turnstileWidgetId = turnstile.render(turnstileWidgetDiv, {
+      sitekey: TURNSTILE_SITE_KEY,
+      theme: 'auto',
+    });
+  }
+  form.addEventListener('submit', async function (event) {
+    event.preventDefault();
+    var nameInput = document.getElementById('guestName');
+    var messageInput = document.getElementById('guestMessage');
     var name = (nameInput ? nameInput.value : '').trim() || 'anonymous';
     var message = (messageInput ? messageInput.value : '').trim();
-    if (!message) return;
+    var status = document.getElementById('guestbookStatus');
+    if (!message) {
+      if (status) status.textContent = 'type a message';
+      return;
+    }
     var token = turnstileWidgetId ? turnstile.getResponse(turnstileWidgetId) : '';
-    if (!token) return;
+    if (!token) {
+      if (status) status.textContent = 'complete the captcha';
+      return;
+    }
+    if (status) status.textContent = 'posting...';
     try {
       var res = await fetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: name, message: message, turnstileToken: token }),
       });
-      if (!res.ok) return;
+      if (!res.ok) {
+        var errMsg = 'could not post, try again later.';
+        if (res.status === 403) {
+          try {
+            var errBody = await res.json();
+            if (errBody.error === 'captcha verification failed') errMsg = 'captcha failed — turn off your vpn or try again later';
+          } catch {}
+        }
+        if (status) status.textContent = errMsg;
+        return;
+      }
+      if (status) status.textContent = 'posted!';
       if (nameInput) nameInput.value = '';
       if (messageInput) messageInput.value = '';
       fetchGuestbookEntries();
-    } catch {}
+    } catch {
+      if (status) status.textContent = 'could not post, try again later.';
+    }
   });
 }
 

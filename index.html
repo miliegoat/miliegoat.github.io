@@ -94,20 +94,16 @@
   <div class="gb-panel">
     <div class="gb-header">
       <span>guestbook</span>
-      <span class="gb-count" id="gbCount">loading...</span>
+      <span id="guestbookStatus">loading...</span>
       <button class="gb-close" id="gbClose">&times;</button>
     </div>
-    <div class="gb-body" id="gbBody">
-      <div class="gb-loading" id="gbLoading">
-        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-      </div>
-    </div>
-    <div class="gb-form" id="gbForm">
-      <input id="gbName" class="gb-input" type="text" maxlength="30" placeholder="name" />
-      <input id="gbMessage" class="gb-input gb-msg" type="text" maxlength="280" placeholder="write something" required />
-      <button class="gb-submit" id="gbSubmit">post</button>
+    <form id="guestbookForm" class="gb-form">
+      <input id="guestName" class="gb-input" type="text" maxlength="30" placeholder="name" />
+      <input id="guestMessage" class="gb-input gb-msg" type="text" maxlength="280" placeholder="write something" required />
+      <button type="submit" class="gb-submit">post</button>
       <div id="turnstileWidget" class="gb-turnstile-wrap"></div>
-    </div>
+    </form>
+    <div id="guestbookEntries" class="gb-body"></div>
   </div>
 </div>
 
