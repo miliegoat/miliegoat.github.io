@@ -244,7 +244,6 @@ function setBackground() {
     var prevPeriod = currentPeriod;
     currentPeriod = period;
     var entry = getRandomBg() || { type: 'img', path: getFallbackBg() };
-    // first load — apply immediately, no fade
     if (prevPeriod === null) {
       applyBgEntry(entry);
       if (period === 'night') applyGlow();
