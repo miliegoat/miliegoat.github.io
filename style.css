@@ -685,7 +685,7 @@ body {
 .gb-panel {
   width: 90%;
   max-width: 520px;
-  max-height: 80vh;
+  height: 80vh;
   background: rgba(0, 0, 0, 0.9);
   border: 3px solid #6b46c1;
   display: flex;
