@@ -823,15 +823,6 @@ function renderGuestbookEntries(entries) {
       '</span></div></div>';
   }).join('');
   updateLoadMore();
-  if (!scrollHintShown && container.scrollHeight > container.clientHeight) {
-    scrollHintShown = true;
-    var hint = document.createElement('div');
-    hint.className = 'gb-scroll-hint';
-    hint.textContent = '\u2193 scroll to see more entries';
-    document.getElementById('gbFooter').appendChild(hint);
-    setTimeout(function () { hint.classList.add('gb-scroll-hint--fade'); }, 2500);
-    setTimeout(function () { hint.remove(); }, 3100);
-  }
 }
 
 function updateLoadMore() {
@@ -913,7 +904,13 @@ async function loadMoreGuestbookEntries() {
       var hint = document.createElement('div');
       hint.className = 'gb-scroll-hint';
       hint.textContent = '\u2193 scroll to see new entries';
-      document.getElementById('gbFooter').appendChild(hint);
+      var footer = document.getElementById('gbFooter');
+      var loadMoreBtn = document.getElementById('gbLoadMore');
+      if (loadMoreBtn) {
+        footer.insertBefore(hint, loadMoreBtn);
+      } else {
+        footer.appendChild(hint);
+      }
       setTimeout(function () { hint.classList.add('gb-scroll-hint--fade'); }, 2500);
       setTimeout(function () { hint.remove(); }, 3100);
     }
