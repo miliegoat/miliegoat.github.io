@@ -1,211 +1,116 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>mil</title>
-    <link rel="preconnect" href="https://api.fontshare.com" />
-    <link
-      rel="stylesheet"
-      href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,400,300&display=swap"
-    />
-    <link rel="stylesheet" href="style.css" />
-    <link rel="icon" href="favicon.ico" />
-    <script
-      src="https://challenges.cloudflare.com/turnstile/v0/api.js"
-      defer
-    ></script>
-  </head>
-  <body>
-    <div class="parallax-wrap">
-      <div class="page">
-        <div class="container">
-          <header class="header">
-            <span class="logo">hi hi i!! hi!!!</span>
-            <div class="header-right">
-              <span class="view-count" id="viewCount">1</span>
-              <a href="oldsite/" class="version-link" title="old version">v1</a>
-              <div class="theme-wrap">
-                <button
-                  class="theme-toggle"
-                  id="themeToggle"
-                  title="toggle theme"
-                >
-                  <svg
-                    class="icon-sun"
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <circle cx="12" cy="12" r="4" />
-                    <path
-                      d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"
-                    />
-                  </svg>
-                  <svg
-                    class="icon-moon"
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-                  </svg>
-                </button>
-                <span class="theme-click-me" id="themeClickMe">click me!</span>
-              </div>
-            </div>
-          </header>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mae</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>
+</head>
+<body>
 
-          <main class="main">
-            <section class="hero">
-              <h1 class="hero-name">mil</h1>
-            </section>
+<div id="timeOverlay"></div>
 
-            <div class="prose reveal">
-              <p>
-                hi, i'm <b>mil</b> - i'm
-                <span class="age-display" id="ageDisplay" data-tooltip=""
-                  >--</span
-                >
-                years old, living in <b>bratislava</b>. i enjoy making things on
-                the web and listening to music!!
-              </p>
+<div id="startOverlay" class="overlay">
+  <div class="overlay-content">
+    <div class="click-label" id="clickLabel">pls click me</div>
+    <div class="click-subtitle">type "fuckyou" to see an easter egg</div>
+  </div>
+</div>
 
-              <p>
-                i'm currently on
-                <a
-                  href="https://discord.com/users/1125787079654260777"
-                  target="_blank"
-                  >discord</a
-                >
-                a lot, you can click the discord text to find it. i mostly
-                listen to
-                <b>trap</b>, <b>pluggnb</b>, <b>rock</b>, <b>alt rock</b>, and
-                <b>indie</b>.
-              </p>
-            </div>
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-content">
+    <div class="logo">
+      <h1><span class="logo-m">m</span><span class="logo-il">ae</span></h1>
+      <div class="logo-divider" id="logoDivider"></div>
+      <div class="logo-subtitle" id="logoSubtitle">hi :)</div>
+    </div>
 
-            <section class="section reveal" id="statusSection">
-              <div class="section-header">
-                <h2>status</h2>
-                <span class="section-sep">/</span>
-                <span class="section-sub">who am i</span>
-              </div>
-              <div class="profile-row" id="discordProfile">
-                <div class="avatar-wrap">
-                  <div class="avatar-placeholder">&#x1F439;</div>
-                </div>
-                <div class="profile-info">
-                  <div class="profile-name">mil</div>
-                  <div class="profile-status">loading...</div>
-                </div>
-              </div>
-              <div id="gameActivities"></div>
-              <div id="spotifyActivity"></div>
-            </section>
+    <div class="sidebar-buttons">
+      <button class="sidebar-btn" onclick="window.open('https://discord.com/users/1125787079654260777')">discord</button>
+      <button class="sidebar-btn" onclick="window.open('https://github.com/miliegoat')">github</button>
+      <button class="sidebar-btn" onclick="window.open('https://github.com/miliegoat/discordrpc-spotifylyrics')">spotifylyrics</button>
+      <button class="sidebar-btn" onclick="window.open('https://github.com/miliegoat/osu-beatmapdl-cli')">beatmapdl</button>
+      <button class="sidebar-btn" id="guestbookBtn">guestbook</button>
+    </div>
 
-            <section class="section reveal">
-              <div class="section-header">
-                <h2>projects</h2>
-                <span class="section-sep">/</span>
-                <span class="section-sub">things i built</span>
-              </div>
-              <div class="link-list">
-                <a
-                  href="https://github.com/miliegoat/discordrpc-spotifylyrics"
-                  target="_blank"
-                  class="link-row"
-                >
-                  <span class="link-label">discordrpc-spotifylyrics</span>
-                  <svg
-                    class="link-arrow"
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path d="M7 17 17 7M7 7h10v10" />
-                  </svg>
-                </a>
-                <a
-                  href="https://github.com/miliegoat/osu-beatmapdl-cli"
-                  target="_blank"
-                  class="link-row"
-                >
-                  <span class="link-label">osu-beatmapdl-cli</span>
-                  <svg
-                    class="link-arrow"
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path d="M7 17 17 7M7 7h10v10" />
-                  </svg>
-                </a>
-              </div>
-            </section>
-
-            <section class="section reveal">
-              <div class="section-header">
-                <h2>guestbook</h2>
-                <span class="section-sep">/</span>
-                <span class="section-sub" id="guestbookStatus">loading...</span>
-              </div>
-            </section>
-
-            <div id="guestbookCard" class="guestbook-panel reveal">
-              <form id="guestbookForm" class="guestbook-form">
-                <div class="guestbook-row">
-                  <input
-                    id="guestName"
-                    class="guestbook-input"
-                    type="text"
-                    maxlength="30"
-                    placeholder="name"
-                  />
-                  <input
-                    id="guestMessage"
-                    class="guestbook-input guestbook-msg"
-                    type="text"
-                    maxlength="280"
-                    placeholder="write something"
-                    required
-                  />
-                  <button type="submit" class="guestbook-submit">post</button>
-                </div>
-                <div id="turnstileWidget"></div>
-              </form>
-              <div id="guestbookEntries" class="guestbook-entries"></div>
-            </div>
-
-            <div>
-              <div class="badges-row reveal">
-                <img src="media/jesus_now.gif" alt="badge" />
-                <img src="media/badge1.png" alt="badge" />
-                <img src="media/badge2.gif" alt="badge" />
-                <img src="media/badge3.gif" alt="badge" />
-              </div>
-
-              <div id="webringContainer" class="webring-footer reveal"></div>
-            </div>
-          </main>
+    <div class="sidebar-profile" id="sidebarProfile">
+      <div class="profile-header">
+        <img class="profile-pic" id="profilePic" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="pfp" />
+        <div class="profile-info">
+          <h3 id="username">loading...</h3>
+          <div class="status" id="status">Unknown</div>
         </div>
+      </div>
+      <div class="profile-divider"></div>
+      <div class="profile-footer">
+        <div class="profile-text" id="profileText">loading...</div>
+        <div class="profile-credit" id="profileCredit">- mil</div>
       </div>
     </div>
 
-    <div id="lyricsContent" hidden></div>
+    <div class="version-links">
+      <a href="v2/" class="version-btn">v2</a>
+      <a href="oldsite/" class="version-btn">v1</a>
+    </div>
+  </div>
+</div>
 
-    <script type="module" src="js/main.js"></script>
-  </body>
+<button class="toggle-btn" id="toggleBtn" onclick="toggleSidebar()">
+  <span id="toggleIcon">&lt;</span>
+</button>
+
+<div class="control-buttons" id="controlButtons">
+  <button class="control-btn" id="playBtn">&#9654;</button>
+  <button class="control-btn" id="nextBtn">&#9197;</button>
+</div>
+
+<div class="volume-container" id="volumeContainer">
+  <span class="volume-label">VOL</span>
+  <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="25" />
+  <span class="volume-value" id="volumeValue">50</span>
+</div>
+
+<div class="main-content" id="mainContent">
+  <div class="now-playing" id="nowPlaying">*</div>
+  <div class="song-progress-container">
+    <div class="progress-bar-horizontal" id="progressBarBg">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="time-display" id="timeDisplay">0:00</div>
+  </div>
+  <audio id="musicPlayer"></audio>
+
+  <div class="circle-container" id="circleContainer">
+    <canvas class="visualizer-canvas" id="visualizerCanvas" width="600" height="600"></canvas>
+    <div class="spinning-circle" id="spinningCircle"></div>
+  </div>
+</div>
+
+<div id="guestbookOverlay" class="gb-overlay hidden">
+  <div class="gb-panel">
+    <div class="gb-header">
+      <span>guestbook</span>
+      <span class="gb-count" id="gbCount">loading...</span>
+      <button class="gb-close" id="gbClose">&times;</button>
+    </div>
+    <div class="gb-body" id="gbBody">
+      <div class="gb-loading" id="gbLoading">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      </div>
+    </div>
+    <div class="gb-form" id="gbForm">
+      <input id="gbName" class="gb-input" type="text" maxlength="30" placeholder="name" />
+      <input id="gbMessage" class="gb-input gb-msg" type="text" maxlength="280" placeholder="write something" required />
+      <button class="gb-submit" id="gbSubmit">post</button>
+      <div id="turnstileWidget" class="gb-turnstile-wrap"></div>
+    </div>
+  </div>
+</div>
+
+<script src="v3.js"></script>
+</body>
 </html>
