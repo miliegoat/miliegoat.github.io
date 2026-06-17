@@ -766,12 +766,12 @@ function doesThing() {
 var gbOffset = 0;
 var gbTotal = 0;
 var gbAllEntries = [];
-var GB_PAGE = 4;
+var GB_PAGE = 8;
 var GB_MAX = 500;
 var WORKER_URL = 'https://snowy-dust-17c3.asdwaawdawd81.workers.dev/';
 var TURNSTILE_SITE_KEY = '0x4AAAAAADg6LkYattvc_Fqe';
 var turnstileWidgetId = null;
-var authorToken = sessionStorage.getItem('author_token') || null;
+var authorToken = null;
 var gbKeyBuffer = '';
 var scrollHintShown = false;
 
@@ -818,6 +818,15 @@ function renderGuestbookEntries(entries) {
       '</span></div></div>';
   }).join('');
   updateLoadMore();
+  if (!scrollHintShown && container.scrollHeight > container.clientHeight) {
+    scrollHintShown = true;
+    var hint = document.createElement('div');
+    hint.className = 'gb-scroll-hint';
+    hint.textContent = '\u2193 scroll to see more entries';
+    document.getElementById('gbFooter').appendChild(hint);
+    setTimeout(function () { hint.classList.add('gb-scroll-hint--fade'); }, 2500);
+    setTimeout(function () { hint.remove(); }, 3100);
+  }
 }
 
 function updateLoadMore() {
