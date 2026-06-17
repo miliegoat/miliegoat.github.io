@@ -461,8 +461,13 @@ function changeImage() {
 }
 
 var firstPlay = true;
+var trackHistory = [];
 
 function playRandom() {
+  if (player.src && player.src !== '') {
+    var currentSrc = player.src.replace(/^.*[\\\/]/, '');
+    if (currentSrc) trackHistory.push(currentSrc);
+  }
   changeImage();
   if (musicTracks.length === 0) {
     document.getElementById('nowPlaying').textContent = 'no tracks loaded';
@@ -498,6 +503,7 @@ player.addEventListener('play', function () { playBtn.textContent = '\u23F8'; })
 player.addEventListener('pause', function () { playBtn.textContent = '\u25B6'; });
 
 var playBtn = document.getElementById('playBtn');
+var prevBtn = document.getElementById('prevBtn');
 var nextBtn = document.getElementById('nextBtn');
 var volumeSlider = document.getElementById('volumeSlider');
 var volumeValue = document.getElementById('volumeValue');
@@ -517,6 +523,27 @@ playBtn.addEventListener('click', function () {
 });
 
 nextBtn.addEventListener('click', playRandom);
+
+prevBtn.addEventListener('click', function () {
+  if (musicTracks.length === 0 || trackHistory.length === 0) return;
+  var prevFile = trackHistory.pop();
+  for (var i = 0; i < musicTracks.length; i++) {
+    if (musicTracks[i].indexOf(prevFile) !== -1) {
+      lastTrackIndex = i;
+      var track = musicTracks[i];
+      player.src = track;
+      player.volume = volumeSlider.value / 500;
+      var startPlay = function () {
+        initAudioContext();
+        player.play().then(function () {
+          document.getElementById('nowPlaying').textContent = 'now playing: ' + cleanName(track);
+        }).catch(function () {});
+      };
+      startPlay();
+      break;
+    }
+  }
+});
 
 volumeSlider.addEventListener('input', function (e) {
   var value = e.target.value;
@@ -794,7 +821,8 @@ function renderGuestbookEntries(entries) {
 }
 
 function updateLoadMore() {
-  var container = document.getElementById('guestbookEntries');
+  var footer = document.getElementById('gbFooter');
+  if (!footer) return;
   var hasMore = gbOffset + GB_PAGE < Math.min(gbTotal, GB_MAX);
   var loadMoreBtn = document.getElementById('gbLoadMore');
   if (hasMore) {
@@ -804,7 +832,7 @@ function updateLoadMore() {
       loadMoreBtn.className = 'guestbook-load-more';
       loadMoreBtn.textContent = 'load more';
       loadMoreBtn.addEventListener('click', loadMoreGuestbookEntries);
-      container.appendChild(loadMoreBtn);
+      footer.appendChild(loadMoreBtn);
     }
   } else if (loadMoreBtn) {
     loadMoreBtn.remove();
@@ -871,7 +899,7 @@ async function loadMoreGuestbookEntries() {
       var hint = document.createElement('div');
       hint.className = 'gb-scroll-hint';
       hint.textContent = '\u2193 scroll to see new entries';
-      container.appendChild(hint);
+      document.getElementById('gbFooter').appendChild(hint);
       setTimeout(function () { hint.classList.add('gb-scroll-hint--fade'); }, 2500);
       setTimeout(function () { hint.remove(); }, 3100);
     }
