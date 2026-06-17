@@ -465,7 +465,7 @@ var trackHistory = [];
 
 function playRandom() {
   if (player.src && player.src !== '') {
-    var currentSrc = player.src.replace(/^.*[\\\/]/, '');
+    var currentSrc = decodeURIComponent(player.src.replace(/^.*[\\\/]/, ''));
     if (currentSrc) trackHistory.push(currentSrc);
   }
   changeImage();
@@ -525,7 +525,12 @@ playBtn.addEventListener('click', function () {
 nextBtn.addEventListener('click', playRandom);
 
 prevBtn.addEventListener('click', function () {
-  if (musicTracks.length === 0 || trackHistory.length === 0) return;
+  if (musicTracks.length === 0) return;
+  if (trackHistory.length === 0) {
+    player.currentTime = 0;
+    player.play();
+    return;
+  }
   var prevFile = trackHistory.pop();
   for (var i = 0; i < musicTracks.length; i++) {
     if (musicTracks[i].indexOf(prevFile) !== -1) {
