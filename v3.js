@@ -37,10 +37,11 @@ let snowTime = 0;
 function initSnow() {
   var random = new Random();
   snowflakes = [];
-  for (var i = 0; i < 150; i++) {
+  var count = window.innerWidth < 540 ? 50 : window.innerWidth < 768 ? 80 : 150;
+  for (var i = 0; i < count; i++) {
     snowflakes.push({
       offsetX: random.nextFloat() * 1000,
-      size: i % 4 === 0 ? 2 : 1
+      size: i % 5 === 0 ? 2 : 1
     });
   }
 }
@@ -192,7 +193,8 @@ function applyBgEntry(entry) {
     bgVideoEl.loop = false;
     bgVideoEl.playsInline = true;
     bgVideoEl.preload = 'auto';
-    bgVideoEl.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:0;filter:brightness(0.5);';
+    var initialFilter = window.innerWidth <= 768 ? 'brightness(0.5) blur(6px)' : 'brightness(0.5)';
+    bgVideoEl.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:0;filter:' + initialFilter + ';';
     document.body.insertBefore(bgVideoEl, document.body.firstChild);
     bgVideoEl.addEventListener('loadedmetadata', function () {
       bgVideoEl.currentTime = 9;
@@ -374,8 +376,25 @@ function cleanName(path) {
   return path.replace(/^.*[\\\/]/, '').replace('.mp3', '');
 }
 
+function resizeCanvas() {
+  canvas = canvas || document.getElementById('visualizerCanvas');
+  if (!canvas) return;
+  var size = Math.min(window.innerWidth * 0.9, window.innerHeight * 0.55, 600);
+  size = Math.max(size, 160);
+  var dpr = window.devicePixelRatio || 1;
+  canvas.width = size * dpr;
+  canvas.height = size * dpr;
+  canvas.style.width = size + 'px';
+  canvas.style.height = size + 'px';
+  ctx = ctx || canvas.getContext('2d');
+  if (dpr !== 1 && ctx) {
+    ctx.scale(dpr, dpr);
+  }
+}
+
 function initAudioContext() {
   if (!audioContext) {
+    resizeCanvas();
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
     analyser = audioContext.createAnalyser();
     analyser.fftSize = 512;
@@ -383,32 +402,35 @@ function initAudioContext() {
     source.connect(analyser);
     analyser.connect(audioContext.destination);
     dataArray = new Uint8Array(analyser.frequencyBinCount);
-    canvas = document.getElementById('visualizerCanvas');
-    ctx = canvas.getContext('2d');
     visualize();
+    window.addEventListener('resize', resizeCanvas);
   }
 }
 
 function visualize() {
   requestAnimationFrame(visualize);
-  if (!analyser || !ctx) return;
+  if (!analyser || !ctx || !canvas) return;
   analyser.getByteFrequencyData(dataArray);
 
   rotation += 0.5;
   var circle = document.getElementById('spinningCircle');
   circle.style.transform = 'rotate(' + rotation + 'deg)';
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  var centerX = canvas.width / 2;
-  var centerY = canvas.height / 2;
-  var radius = 90;
+  var dpr = window.devicePixelRatio || 1;
+  var w = canvas.width / dpr;
+  var h = canvas.height / dpr;
+  ctx.clearRect(0, 0, w, h);
+  var centerX = w / 2;
+  var centerY = h / 2;
+  var radius = Math.min(w, h) * 0.15;
+  var amplitudeMax = Math.min(w, h) * 0.14;
   var points = [];
   var totalPoints = 67;
 
   for (var i = 0; i < totalPoints; i++) {
     var relIndex = Math.floor(i * (dataArray.length / 2) / totalPoints);
     var val = dataArray[relIndex];
-    var amplitude = (val / 255) * 80;
+    var amplitude = (val / 255) * amplitudeMax;
     var angle = (i / totalPoints) * Math.PI * 2 + (rotation * Math.PI / 180);
     var r = radius + amplitude;
     points.push({
@@ -434,17 +456,17 @@ function visualize() {
 
   var time = Date.now() / 1000;
   var colorShift = (Math.sin(time) + 1) / 2;
-  var r = Math.floor(107 + colorShift * 40);
-  var b = Math.floor(193 + colorShift * 60);
+  var red = Math.floor(107 + colorShift * 40);
+  var blue = Math.floor(193 + colorShift * 60);
 
-  var gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius + 80);
-  gradient.addColorStop(0, 'rgba(40, 20, 80, 0.6)');
-  gradient.addColorStop(1, 'rgba(' + r + ', 70, ' + b + ', 0.5)');
+  var grd = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius + amplitudeMax);
+  grd.addColorStop(0, 'rgba(40, 20, 80, 0.6)');
+  grd.addColorStop(1, 'rgba(' + red + ', 70, ' + blue + ', 0.5)');
 
-  ctx.fillStyle = gradient;
+  ctx.fillStyle = grd;
   ctx.fill();
-  ctx.strokeStyle = 'rgba(' + r + ', 120, ' + b + ', 0.8)';
-  ctx.lineWidth = 4;
+  ctx.strokeStyle = 'rgba(' + red + ', 120, ' + blue + ', 0.8)';
+  ctx.lineWidth = Math.max(2, Math.min(4, w * 0.008));
   ctx.stroke();
 }
 
@@ -457,7 +479,7 @@ function changeImage() {
   lastCatIndex = idx;
   var circle = document.getElementById('spinningCircle');
   circle.style.backgroundImage = 'url(cats/cat' + idx + '.jpg)';
-  circle.style.backgroundSize = 'cover';
+  circle.style.backgroundSize = '110%';
 }
 
 var firstPlay = true;
@@ -584,11 +606,43 @@ function initMainContent() {
   initSnow();
   drawSnow();
   fetchProfile();
-    setInterval(fetchProfile, 1000);
+  setInterval(fetchProfile, 1000);
 
   volumeSlider.style.setProperty('--value', '25%');
   volumeValue.textContent = '25';
   volumeSlider.value = '25';
+
+  var backdrop = document.getElementById('sidebarBackdrop');
+  if (backdrop) {
+    backdrop.addEventListener('click', function () {
+      if (backdrop.classList.contains('visible')) {
+        toggleSidebar();
+      }
+    });
+  }
+
+  if (window.innerWidth <= 768) {
+    var sidebar = document.getElementById('sidebar');
+    var controlButtons = document.getElementById('controlButtons');
+    var volumeContainer = document.getElementById('volumeContainer');
+
+    function positionControls() {
+      if (!sidebar.classList.contains('hidden')) {
+        var h = sidebar.offsetHeight;
+        controlButtons.style.bottom = (h + 8) + 'px';
+        controlButtons.style.top = '';
+        volumeContainer.style.bottom = (h + 68) + 'px';
+        volumeContainer.style.top = '';
+      }
+    }
+
+    positionControls();
+
+    if (window.ResizeObserver) {
+      var ro = new ResizeObserver(positionControls);
+      ro.observe(sidebar);
+    }
+  }
 }
 
 function toggleSidebar() {
@@ -599,6 +653,9 @@ function toggleSidebar() {
   var circleContainer = document.getElementById('circleContainer');
   var controlButtons = document.getElementById('controlButtons');
   var volumeContainer = document.getElementById('volumeContainer');
+  var backdrop = document.getElementById('sidebarBackdrop');
+
+  var opening = sidebar.classList.contains('hidden');
 
   sidebar.classList.toggle('hidden');
   toggleBtn.classList.toggle('sidebar-hidden');
@@ -607,6 +664,30 @@ function toggleSidebar() {
   controlButtons.classList.toggle('sidebar-hidden');
   volumeContainer.classList.toggle('sidebar-hidden');
   toggleIcon.textContent = sidebar.classList.contains('hidden') ? '>' : '<';
+  if (backdrop) {
+    if (opening) {
+      backdrop.classList.add('visible');
+    } else {
+      backdrop.classList.remove('visible');
+    }
+  }
+
+  if (window.innerWidth <= 768) {
+    if (opening) {
+      var h = sidebar.offsetHeight;
+      controlButtons.style.bottom = (h + 8) + 'px';
+      controlButtons.style.top = '';
+      volumeContainer.style.bottom = (h + 68) + 'px';
+      volumeContainer.style.top = '';
+      if (bgVideoEl) bgVideoEl.style.filter = 'brightness(0.5) blur(6px)';
+    } else {
+      controlButtons.style.bottom = '';
+      controlButtons.style.top = '';
+      volumeContainer.style.bottom = '';
+      volumeContainer.style.top = '';
+      if (bgVideoEl) bgVideoEl.style.filter = 'brightness(0.5)';
+    }
+  }
 }
 
 var input = '';

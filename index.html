@@ -11,7 +11,6 @@
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>
 </head>
 <body>
-<script>if (window.innerWidth <= 768) location.href = 'v2/';</script>
 
 <div id="timeOverlay"></div>
 
@@ -22,6 +21,7 @@
   </div>
 </div>
 
+<div class="sidebar-backdrop visible" id="sidebarBackdrop"></div>
 <div class="sidebar" id="sidebar">
   <div class="sidebar-content">
     <div class="logo">
@@ -87,7 +87,7 @@
   <audio id="musicPlayer"></audio>
 
   <div class="circle-container" id="circleContainer">
-    <canvas class="visualizer-canvas" id="visualizerCanvas" width="600" height="600"></canvas>
+    <canvas class="visualizer-canvas" id="visualizerCanvas"></canvas>
     <div class="spinning-circle" id="spinningCircle"></div>
   </div>
 </div>
