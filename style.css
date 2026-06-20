@@ -369,6 +369,8 @@ body {
   width: 200px;
   height: 200px;
   border-radius: 50%;
+  -webkit-clip-path: circle(50%);
+  clip-path: circle(50%);
   background: linear-gradient(135deg, #6b46c1, #a78bfa, #4a2d8a);
   background-size: 110%;
   background-repeat: no-repeat;
@@ -381,7 +383,6 @@ body {
   justify-content: center;
   font-size: 60px;
   color: rgba(255, 255, 255, 0.1);
-  overflow: hidden;
   animation: spin 8s linear infinite;
 }
 

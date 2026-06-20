@@ -89,72 +89,40 @@ var bgReady = false;
 var bgVideoEl = null;
 
 function preloadBackgrounds() {
-  var max = 50;
-  var pending = 0;
-  function done() {
-    if (pending === 0) {
-      bgReady = true;
-      detectBgVideos();
-    }
-  }
-  for (var i = 1; i <= max; i++) {
-    (function (n) {
-      pending++;
-      var img = new Image();
-      img.onload = function () {
-        bgList.push({ type: 'img', path: 'bgs/' + n + '.jpg' });
-        pending--;
-        done();
-      };
-      img.onerror = function () {
-        var img2 = new Image();
-        img2.onload = function () {
-          bgList.push({ type: 'img', path: 'bgs/' + n + '.png' });
-          pending--;
-          done();
-        };
-        img2.onerror = function () {
-          pending--;
-          done();
-        };
-        img2.src = 'bgs/' + n + '.png';
-      };
-      img.src = 'bgs/' + n + '.jpg';
-    })(i);
-  }
+  detectBgVideos();
 }
 
 function detectBgVideos() {
-  var max = 50;
-  for (var i = 1; i <= max; i++) {
-    (function (n) {
-      var tryLoad = function (ext) {
-        var vid = document.createElement('video');
-        vid.preload = 'metadata';
-        vid.muted = true;
-        var oncanplay = function () {
-          vid.removeEventListener('canplay', oncanplay);
-          vid.removeEventListener('error', onerror);
-          var wasEmpty = bgList.length === 0;
-          bgList.push({ type: 'vid', path: 'bgs/' + n + ext });
-          if (wasEmpty) {
-            var entry = getRandomBg();
-            if (entry) applyBgEntry(entry);
-          }
-        };
-        var onerror = function () {
-          vid.removeEventListener('canplay', oncanplay);
-          vid.removeEventListener('error', onerror);
-          if (ext === '.mp4') tryLoad('.webm');
-        };
-        vid.addEventListener('canplay', oncanplay);
-        vid.addEventListener('error', onerror);
-        vid.src = 'bgs/' + n + ext;
-        vid.load();
-      };
-      tryLoad('.mp4');
-    })(i);
+  var misses = 0;
+  function tryNext(n) {
+    if (n > 99 || misses >= 3) { bgReady = true; return; }
+    var vid = document.createElement('video');
+    vid.preload = 'metadata';
+    vid.muted = true;
+    var oncanplay = function () {
+      vid.removeEventListener('canplay', oncanplay);
+      vid.removeEventListener('error', onerror);
+      misses = 0;
+      var wasEmpty = bgList.length === 0;
+      bgList.push({ type: 'vid', path: 'bgs/' + n + '.mp4' });
+      if (wasEmpty) {
+        var entry = getRandomBg();
+        if (entry) applyBgEntry(entry);
+      }
+      tryNext(n + 1);
+    };
+    var onerror = function () {
+      vid.removeEventListener('canplay', oncanplay);
+      vid.removeEventListener('error', onerror);
+      misses++;
+      tryNext(n + 1);
+    };
+    vid.addEventListener('canplay', oncanplay);
+    vid.addEventListener('error', onerror);
+    vid.src = 'bgs/' + n + '.mp4';
+    vid.load();
   }
+  tryNext(1);
 }
 
 function getRandomBg() {
@@ -312,50 +280,64 @@ function removeGlow() {
   });
 }
 
-async function fetchProfile() {
-  try {
-    var res = await fetch('https://api.lanyard.rest/v1/users/' + ID);
-    var data = await res.json();
-    if (!data.success) return;
 
-    var user = data.data.discord_user;
-    var profilePic = document.getElementById('profilePic');
-    var username = document.getElementById('username');
-    var status = document.getElementById('status');
+function connectLanyard() {
+  var ws = new WebSocket('wss://api.lanyard.rest/socket');
+  var heartbeat;
 
-    if (user.avatar) {
-      var avatarUrl = 'https://cdn.discordapp.com/avatars/' + user.id + '/' + user.avatar + '.png?size=256';
-      profilePic.src = avatarUrl;
+  ws.addEventListener('message', function (e) {
+    var msg = JSON.parse(e.data);
+    if (msg.op === 1) {
+      ws.send(JSON.stringify({ op: 2, d: { subscribe_to_id: ID } }));
+      heartbeat = setInterval(function () {
+        ws.send(JSON.stringify({ op: 3 }));
+      }, msg.d.heartbeat_interval);
     }
-    username.textContent = user.display_name || user.global_name || user.username;
+    if (msg.op === 0 && (msg.t === 'INIT_STATE' || msg.t === 'PRESENCE_UPDATE')) {
+      var d = msg.d;
+      var user = d.discord_user;
+      var profilePic = document.getElementById('profilePic');
+      var username = document.getElementById('username');
+      var status = document.getElementById('status');
 
-    var statusMap = { online: 'Online', idle: 'Idle', dnd: 'Do Not Disturb', offline: 'Offline' };
-    var discordStatus = data.data.discord_status;
-    status.textContent = statusMap[discordStatus] || 'Unknown';
+      if (user.avatar) {
+        profilePic.src = 'https://cdn.discordapp.com/avatars/' + user.id + '/' + user.avatar + '.png?size=256';
+      }
+      username.textContent = user.display_name || user.global_name || user.username;
 
-    var statusColors = { online: '#43b581', idle: '#faa61a', dnd: '#f04747', offline: '#747f8d' };
-    if (statusColors[discordStatus]) {
-      status.style.backgroundColor = statusColors[discordStatus] + '33';
-      status.style.color = statusColors[discordStatus];
-    }
+      var statusMap = { online: 'Online', idle: 'Idle', dnd: 'Do Not Disturb', offline: 'Offline' };
+      var discordStatus = d.discord_status;
+      status.textContent = statusMap[discordStatus] || 'Unknown';
 
-    var customStatus = '';
-    if (data.data.activities && data.data.activities.length > 0) {
-      for (var a = 0; a < data.data.activities.length; a++) {
-        var act = data.data.activities[a];
-        if (act.type === 4 && act.state) {
-          customStatus = act.state;
-          if (act.emoji && act.emoji.name) {
-            customStatus = act.emoji.name + ' ' + customStatus;
+      var statusColors = { online: '#43b581', idle: '#faa61a', dnd: '#f04747', offline: '#747f8d' };
+      if (statusColors[discordStatus]) {
+        status.style.backgroundColor = statusColors[discordStatus] + '33';
+        status.style.color = statusColors[discordStatus];
+      }
+
+      var customStatus = '';
+      if (d.activities && d.activities.length > 0) {
+        for (var a = 0; a < d.activities.length; a++) {
+          var act = d.activities[a];
+          if (act.type === 4 && act.state) {
+            customStatus = act.state;
+            if (act.emoji && act.emoji.name) {
+              customStatus = act.emoji.name + ' ' + customStatus;
+            }
+            break;
           }
-          break;
         }
       }
+      document.getElementById('profileText').textContent = customStatus || '';
+      document.getElementById('profileCredit').textContent = '- ' + user.username;
+      document.querySelector('.profile-footer').style.display = customStatus ? 'flex' : 'none';
     }
-    document.getElementById('profileText').textContent = customStatus || '';
-    document.getElementById('profileCredit').textContent = '- ' + user.username;
-    document.querySelector('.profile-footer').style.display = customStatus ? 'flex' : 'none';
-  } catch (e) { console.error(e); }
+  });
+
+  ws.addEventListener('close', function () {
+    if (heartbeat) clearInterval(heartbeat);
+    setTimeout(connectLanyard, 3000);
+  });
 }
 
 const musicTracks = [
@@ -605,8 +587,7 @@ function initMainContent() {
   setInterval(setBackground, 60000);
   initSnow();
   drawSnow();
-  fetchProfile();
-  setInterval(fetchProfile, 1000);
+  connectLanyard();
 
   volumeSlider.style.setProperty('--value', '25%');
   volumeValue.textContent = '25';
