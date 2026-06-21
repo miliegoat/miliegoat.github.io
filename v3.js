@@ -737,6 +737,15 @@ document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 document.addEventListener('mousedown', function (e) { if (e.button === 1) e.preventDefault(); });
 document.addEventListener('dblclick', function (e) { e.preventDefault(); });
 
+window.addEventListener('pageshow', function () {
+  document.getElementById('player').classList.remove('hidden');
+  if (audioContext && audioContext.state === 'suspended') audioContext.resume();
+});
+
+document.addEventListener('visibilitychange', function () {
+  if (!document.hidden && audioContext && audioContext.state === 'suspended') audioContext.resume();
+});
+
 window.addEventListener('load', function () {
   initOverlay();
   initGuestbook();

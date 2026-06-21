@@ -29,8 +29,8 @@ body {
   min-height: 100vh;
   overflow: hidden;
   display: grid;
-  grid-template-columns: 1fr 280px;
-  grid-template-rows: auto 1fr auto;
+  grid-template-columns: 1fr 300px;
+  grid-template-rows: auto auto 1fr;
   column-gap: 3.5vw;
   padding: 2.5vw 3.5vw 3.5vw;
   position: relative;
@@ -301,14 +301,15 @@ body {
 
 .player {
   grid-column: 2;
-  grid-row: 3;
+  grid-row: 2;
   justify-self: end;
-  align-self: end;
-  width: 280px;
+  align-self: start;
+  margin-top: 8px;
+  width: 300px;
   padding: 14px 18px 12px;
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: var(--radius);
-  background: rgba(11, 11, 11, 0.65);
+  background: rgba(11, 11, 11, 0.55);
   transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 

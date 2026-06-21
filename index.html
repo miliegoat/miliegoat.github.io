@@ -33,15 +33,16 @@
   <button id="guestbookBtn">guestbook</button>
 </div>
 
-<div class="profile">
-  <img class="pfp" id="profilePic" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="" />
-  <span class="un" id="username">loading...</span>
-  <span class="stat" id="status">offline</span>
-  <span class="bio" id="profileText"></span>
-  <span class="credit" id="profileCredit">- mil</span>
-</div>
+<div class="right-column">
+  <div class="profile">
+    <img class="pfp" id="profilePic" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="" />
+    <span class="un" id="username">loading...</span>
+    <span class="stat" id="status">offline</span>
+    <span class="bio" id="profileText"></span>
+    <span class="credit" id="profileCredit">- mil</span>
+  </div>
 
-<div class="player" id="player">
+  <div class="player" id="player">
   <canvas id="visualizerCanvas"></canvas>
   <p class="track" id="nowPlaying">*</p>
   <div class="prog">
@@ -56,6 +57,7 @@
     <input type="range" class="vol" id="volumeSlider" min="0" max="100" value="25" />
     <span class="vol-num" id="volumeValue">25</span>
   </div>
+</div>
 </div>
 
 <audio id="musicPlayer"></audio>
