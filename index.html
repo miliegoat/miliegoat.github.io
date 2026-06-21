@@ -1,85 +1,133 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>mae</title>
-  <link rel="icon" type="image/x-icon" href="favicon.ico" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>mae</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <script
+      src="https://challenges.cloudflare.com/turnstile/v0/api.js"
+      defer
+    ></script>
+  </head>
+  <body>
+    <div id="timeOverlay"></div>
 
-<div id="timeOverlay"></div>
-
-<div id="startOverlay">
-  <p class="start-text" id="clickLabel">pls click me</p>
-
-</div>
-
-<div class="name-group">
-  <p class="name" id="toggleText"><span>mae</span></p>
-  <p class="tagline">hi, i'm <b>mil</b> - i'm <span class="age-display" id="ageDisplay" data-tooltip="--">--</span> years old, living in <b>bratislava</b>. i enjoy making things on the web and listening to music!!</p>
-</div>
-
-<div class="links">
-  <a href="https://discord.com/users/1125787079654260777" target="_blank">discord</a>
-  <a href="https://github.com/miliegoat" target="_blank">github</a>
-  <a href="https://github.com/miliegoat/discordrpc-spotifylyrics" target="_blank">spotifylyrics</a>
-  <a href="https://github.com/miliegoat/osu-beatmapdl-cli" target="_blank">beatmapdl</a>
-  <button id="guestbookBtn">guestbook</button>
-</div>
-
-<div class="right-column">
-  <div class="profile">
-    <img class="pfp" id="profilePic" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="" />
-    <span class="un" id="username">loading...</span>
-    <span class="stat" id="status">offline</span>
-    <span class="bio" id="profileText"></span>
-    <span class="credit" id="profileCredit">- mil</span>
-  </div>
-
-  <div class="player" id="player">
-  <canvas id="visualizerCanvas"></canvas>
-  <p class="track" id="nowPlaying">*</p>
-  <div class="prog">
-    <div class="prog-bg" id="progressBarBg"><div class="prog-fill" id="progressFill"></div></div>
-    <span class="prog-time" id="timeDisplay">0:00</span>
-  </div>
-  <div class="ctrls">
-    <button class="cbtn" id="prevBtn">⏮</button>
-    <button class="cbtn play" id="playBtn">▶</button>
-    <button class="cbtn" id="nextBtn">⏭</button>
-    <span class="vol-label">vol</span>
-    <input type="range" class="vol" id="volumeSlider" min="0" max="100" value="25" />
-    <span class="vol-num" id="volumeValue">25</span>
-  </div>
-</div>
-</div>
-
-<audio id="musicPlayer"></audio>
-
-<div id="guestbookOverlay" class="gb-overlay hidden">
-  <div class="gb-panel">
-    <div class="gb-header">
-      <span>guestbook</span>
-      <span id="guestbookStatus">loading...</span>
-      <button class="gb-close" id="gbClose">&times;</button>
+    <div id="startOverlay">
+      <p class="start-text" id="clickLabel">pls click me</p>
     </div>
-    <form id="guestbookForm" class="gb-form">
-      <input id="guestName" class="gb-input" type="text" maxlength="30" placeholder="name" />
-      <input id="guestMessage" class="gb-input gb-msg" type="text" maxlength="280" placeholder="write something" required />
-      <button type="submit" class="gb-submit">post</button>
-      <div id="turnstileWidget" class="gb-turnstile-wrap"></div>
-    </form>
-    <div id="guestbookEntries" class="gb-body"></div>
-    <div class="gb-footer" id="gbFooter"></div>
-  </div>
-</div>
 
-<script src="v3.js"></script>
-</body>
+    <div class="name-group">
+      <p class="name" id="toggleText"><span>mae</span></p>
+      <p class="tagline">
+        hi, i'm <b>mae</b> - i'm
+        <span class="age-display" id="ageDisplay" data-tooltip="--">--</span>
+        years old, i live in <b>bratislava</b>. i enjoy making things on the web
+        and listening to music!! i also enjoy minecraft and especially minecraft
+        cheating..
+      </p>
+    </div>
+
+    <div class="links">
+      <a href="https://discord.com/users/1125787079654260777" target="_blank"
+        >discord</a
+      >
+      <a href="https://github.com/miliegoat" target="_blank">github</a>
+      <a
+        href="https://github.com/miliegoat/discordrpc-spotifylyrics"
+        target="_blank"
+        >spotifylyrics</a
+      >
+      <a href="https://github.com/miliegoat/osu-beatmapdl-cli" target="_blank"
+        >beatmapdl</a
+      >
+      <button id="guestbookBtn">guestbook</button>
+    </div>
+
+    <div class="right-column">
+      <div class="profile">
+        <img
+          class="pfp"
+          id="profilePic"
+          src="https://cdn.discordapp.com/embed/avatars/0.png"
+          alt=""
+        />
+        <span class="un" id="username">loading...</span>
+        <span class="stat" id="status">offline</span>
+        <span class="bio" id="profileText"></span>
+        <span class="credit" id="profileCredit">- mil</span>
+      </div>
+
+      <div class="player" id="player">
+        <canvas id="visualizerCanvas"></canvas>
+        <p class="track" id="nowPlaying">*</p>
+        <div class="prog">
+          <div class="prog-bg" id="progressBarBg">
+            <div class="prog-fill" id="progressFill"></div>
+          </div>
+          <span class="prog-time" id="timeDisplay">0:00</span>
+        </div>
+        <div class="ctrls">
+          <button class="cbtn" id="prevBtn">⏮</button>
+          <button class="cbtn play" id="playBtn">▶</button>
+          <button class="cbtn" id="nextBtn">⏭</button>
+          <span class="vol-label">vol</span>
+          <input
+            type="range"
+            class="vol"
+            id="volumeSlider"
+            min="0"
+            max="100"
+            value="25"
+          />
+          <span class="vol-num" id="volumeValue">25</span>
+        </div>
+        <div class="lyrics" id="lyricsContainer">
+          <div class="lyric-track" id="lyricTrack"></div>
+        </div>
+      </div>
+    </div>
+
+    <audio id="musicPlayer"></audio>
+
+    <div id="guestbookOverlay" class="gb-overlay hidden">
+      <div class="gb-panel">
+        <div class="gb-header">
+          <span>guestbook</span>
+          <span id="guestbookStatus">loading...</span>
+          <button class="gb-close" id="gbClose">&times;</button>
+        </div>
+        <form id="guestbookForm" class="gb-form">
+          <input
+            id="guestName"
+            class="gb-input"
+            type="text"
+            maxlength="30"
+            placeholder="name"
+          />
+          <input
+            id="guestMessage"
+            class="gb-input gb-msg"
+            type="text"
+            maxlength="280"
+            placeholder="write something"
+            required
+          />
+          <button type="submit" class="gb-submit">post</button>
+          <div id="turnstileWidget" class="gb-turnstile-wrap"></div>
+        </form>
+        <div id="guestbookEntries" class="gb-body"></div>
+        <div class="gb-footer" id="gbFooter"></div>
+      </div>
+    </div>
+
+    <script src="v3.js"></script>
+  </body>
 </html>
