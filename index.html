@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mae</title>
+  <title>mae</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer></script>
 </head>
@@ -14,83 +15,55 @@
 
 <div id="timeOverlay"></div>
 
-<div id="startOverlay" class="overlay">
-  <div class="overlay-content">
-    <div class="click-label" id="clickLabel">pls click me</div>
-    <div class="click-subtitle">type "fuckyou" to see an easter egg</div>
+<div id="startOverlay">
+  <p class="start-text" id="clickLabel">pls click me</p>
+  <p class="start-sub">type "fuckyou" to see an easter egg</p>
+</div>
+
+<p class="name" id="toggleText">mae</p>
+<p class="tagline">hi :)</p>
+
+<div class="profile">
+  <img class="pfp" id="profilePic" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="" />
+  <span class="un" id="username">loading...</span>
+  <span class="stat" id="status">offline</span>
+  <span class="bio" id="profileText"></span>
+  <span class="credit" id="profileCredit">- mil</span>
+</div>
+
+<div class="links">
+  <a href="https://discord.com/users/1125787079654260777" target="_blank">discord</a>
+  <a href="https://github.com/miliegoat" target="_blank">github</a>
+  <a href="https://github.com/miliegoat/discordrpc-spotifylyrics" target="_blank">spotifylyrics</a>
+  <a href="https://github.com/miliegoat/osu-beatmapdl-cli" target="_blank">beatmapdl</a>
+  <button id="guestbookBtn">guestbook</button>
+</div>
+
+<div class="versions">
+  <a href="v2/">v2</a>
+  <a href="oldsite/">v1</a>
+</div>
+
+<div class="player" id="player">
+  <canvas id="visualizerCanvas"></canvas>
+  <p class="track" id="nowPlaying">*</p>
+  <div class="prog">
+    <div class="prog-bg" id="progressBarBg"><div class="prog-fill" id="progressFill"></div></div>
+    <span class="prog-time" id="timeDisplay">0:00</span>
+  </div>
+  <div class="ctrls">
+    <button class="cbtn" id="prevBtn">⏮</button>
+    <button class="cbtn play" id="playBtn">▶</button>
+    <button class="cbtn" id="nextBtn">⏭</button>
+    <span class="vol-label">vol</span>
+    <input type="range" class="vol" id="volumeSlider" min="0" max="100" value="25" />
+    <span class="vol-num" id="volumeValue">25</span>
   </div>
 </div>
 
-<div class="sidebar-backdrop visible" id="sidebarBackdrop"></div>
-<div class="sidebar" id="sidebar">
-  <div class="sidebar-content">
-    <div class="logo">
-      <h1><span class="logo-m">m</span><span class="logo-il">ae</span></h1>
-      <div class="logo-divider" id="logoDivider"></div>
-      <div class="logo-subtitle" id="logoSubtitle">hi :)</div>
-    </div>
+<button class="tog" id="toggleBtn">↑</button>
 
-    <div class="sidebar-buttons">
-      <button class="sidebar-btn" onclick="window.open('https://discord.com/users/1125787079654260777')">discord</button>
-      <button class="sidebar-btn" onclick="window.open('https://github.com/miliegoat')">github</button>
-      <button class="sidebar-btn" onclick="window.open('https://github.com/miliegoat/discordrpc-spotifylyrics')">spotifylyrics</button>
-      <button class="sidebar-btn" onclick="window.open('https://github.com/miliegoat/osu-beatmapdl-cli')">beatmapdl</button>
-      <button class="sidebar-btn" id="guestbookBtn">guestbook</button>
-    </div>
-
-    <div class="sidebar-profile" id="sidebarProfile">
-      <div class="profile-header">
-        <img class="profile-pic" id="profilePic" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="pfp" />
-        <div class="profile-info">
-          <h3 id="username">loading...</h3>
-          <div class="status" id="status">Unknown</div>
-        </div>
-      </div>
-      <div class="profile-divider"></div>
-      <div class="profile-footer">
-        <div class="profile-text" id="profileText">loading...</div>
-        <div class="profile-credit" id="profileCredit">- mil</div>
-      </div>
-    </div>
-
-    <div class="version-links">
-      <a href="v2/" class="version-btn">v2</a>
-      <a href="oldsite/" class="version-btn">v1</a>
-    </div>
-  </div>
-</div>
-
-<button class="toggle-btn" id="toggleBtn" onclick="toggleSidebar()">
-  <span id="toggleIcon">&lt;</span>
-</button>
-
-<div class="control-buttons" id="controlButtons">
-  <button class="control-btn" id="prevBtn">&#9198;</button>
-  <button class="control-btn" id="playBtn">&#9654;</button>
-  <button class="control-btn" id="nextBtn">&#9197;</button>
-</div>
-
-<div class="volume-container" id="volumeContainer">
-  <span class="volume-label">VOL</span>
-  <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="25" />
-  <span class="volume-value" id="volumeValue">50</span>
-</div>
-
-<div class="main-content" id="mainContent">
-  <div class="now-playing" id="nowPlaying">*</div>
-  <div class="song-progress-container">
-    <div class="progress-bar-horizontal" id="progressBarBg">
-      <div class="progress-fill" id="progressFill"></div>
-    </div>
-    <div class="time-display" id="timeDisplay">0:00</div>
-  </div>
-  <audio id="musicPlayer"></audio>
-
-  <div class="circle-container" id="circleContainer">
-    <canvas class="visualizer-canvas" id="visualizerCanvas"></canvas>
-    <div class="spinning-circle" id="spinningCircle"></div>
-  </div>
-</div>
+<audio id="musicPlayer"></audio>
 
 <div id="guestbookOverlay" class="gb-overlay hidden">
   <div class="gb-panel">
