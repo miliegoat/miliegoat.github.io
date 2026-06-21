@@ -11,6 +11,7 @@
 
 html {
   font-size: 115%;
+  overflow-x: hidden;
 }
 
 * {
@@ -802,6 +803,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    overflow-x: hidden;
     overflow-y: auto;
     padding: 16px;
     gap: 12px;
