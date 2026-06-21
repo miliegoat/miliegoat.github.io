@@ -29,9 +29,9 @@
       <p class="tagline">
         hi, i'm <b>mae</b> - i'm
         <span class="age-display" id="ageDisplay" data-tooltip="--">--</span>
-        years old, i live in <b>bratislava</b>. i enjoy making things on the web
-        and listening to music!! i also enjoy minecraft and especially minecraft
-        cheating..
+        years old, living in <b>bratislava</b>. i enjoy making things on the web
+        and listening to music!! i also enjoy minecraft, specifically cheating
+        on minecraft and developing cheats for it. i also enjoy osu!
       </p>
     </div>
 
@@ -75,9 +75,21 @@
           <span class="prog-time" id="timeDisplay">0:00</span>
         </div>
         <div class="ctrls">
-          <button class="cbtn" id="prevBtn">⏮</button>
-          <button class="cbtn play" id="playBtn">▶</button>
-          <button class="cbtn" id="nextBtn">⏭</button>
+          <button class="cbtn" id="prevBtn" aria-label="previous">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M6 6h2v12H6zM20 6v12l-8.5-6z" />
+            </svg>
+          </button>
+          <button class="cbtn play" id="playBtn" aria-label="play">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+              <path id="playIconPath" d="M8 5v14l11-7z" />
+            </svg>
+          </button>
+          <button class="cbtn" id="nextBtn" aria-label="next">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M16 6h2v12h-2zM4 6v12l8.5-6z" />
+            </svg>
+          </button>
           <span class="vol-label">vol</span>
           <input
             type="range"
