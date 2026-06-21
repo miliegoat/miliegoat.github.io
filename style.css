@@ -145,6 +145,7 @@ body {
     opacity 0.5s ease,
     color 0.5s ease;
   background: rgba(11, 11, 11, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.04);
   padding: 0px 45px 35px 25px;
   border-radius: 10px;
 }
@@ -164,6 +165,7 @@ body {
   font-weight: 400;
   letter-spacing: 0.02em;
   background: rgba(11, 11, 11, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.04);
   padding: 4px 10px;
   border-radius: var(--radius);
   line-height: 1.5;
@@ -284,6 +286,7 @@ body {
   gap: 4px;
   width: fit-content;
   background: rgba(11, 11, 11, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.04);
   padding: 8px 14px;
   border-radius: var(--radius);
 }
