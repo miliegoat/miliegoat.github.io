@@ -136,7 +136,7 @@ function applyBgEntry(entry) {
     bgVideoEl.loop = false;
     bgVideoEl.playsInline = true;
     bgVideoEl.preload = 'auto';
-    var initialFilter = window.innerWidth <= 768 ? 'brightness(0.35) blur(6px)' : 'brightness(0.35)';
+    var initialFilter = 'brightness(0.35) blur(6px)';
     bgVideoEl.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:0;filter:' + initialFilter + ';';
     document.body.insertBefore(bgVideoEl, document.body.firstChild);
     bgVideoEl.addEventListener('loadedmetadata', function () {
@@ -397,6 +397,21 @@ progressBarBg.addEventListener('click', function (e) {
   }
 });
 
+function initAgeDisplay() {
+  var el = document.getElementById("ageDisplay");
+  if (!el) return;
+  var birthDate = new Date("2010-08-06T00:00:00");
+  function update() {
+    var now = new Date();
+    var diff = now - birthDate;
+    var years = diff / (365.25 * 24 * 60 * 60 * 1000);
+    el.textContent = Math.floor(years);
+    el.setAttribute("data-tooltip", years.toFixed(8));
+  }
+  update();
+  setInterval(update, 100);
+}
+
 function initMainContent() {
   preloadBackgrounds();
   setBackground();
@@ -404,22 +419,14 @@ function initMainContent() {
   initSnow();
   drawSnow();
   connectLanyard();
+  initAgeDisplay();
   volumeValue.textContent = '25';
   volumeSlider.value = '25';
 }
 
-function togglePlayer() {
-  var el = document.getElementById('player');
-  var tog = document.getElementById('toggleBtn');
-  el.classList.toggle('hidden');
-  tog.textContent = el.classList.contains('hidden') ? '\u2193' : '\u2191';
-}
-
-document.getElementById('toggleBtn').addEventListener('click', togglePlayer);
-document.querySelector('.name').addEventListener('click', togglePlayer);
 
 var input = '';
-var thing = 'fuckyou';
+var thing = 'stupidcat';
 
 document.addEventListener('keydown', function (e) {
   input += e.key.toLowerCase();
@@ -449,7 +456,7 @@ function doesThing() {
   document.body.appendChild(blackOverlay);
   setTimeout(function () { blackOverlay.style.opacity = '1'; }, 50);
 
-  var els = document.querySelectorAll('.name, .tagline, .profile, .links, .versions, .player, .tog');
+  var els = document.querySelectorAll('.name, .tagline, .profile, .links, .player');
   els.forEach(function (el) {
     el.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
     el.style.opacity = '0';
@@ -462,7 +469,7 @@ function doesThing() {
     document.body.appendChild(cd);
     setTimeout(function () { cd.style.fontSize = 'clamp(3rem, 12vw, 7rem)'; cd.style.opacity = '1'; }, 100);
 
-    var count = 10.00;
+    var count = 1.00;
     var update = setInterval(function () {
       if (count <= 0.01) {
         clearInterval(update);
@@ -725,6 +732,10 @@ function initGuestbook() {
     } catch { if (status) status.textContent = 'could not post, try again later.'; }
   });
 }
+
+document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+document.addEventListener('mousedown', function (e) { if (e.button === 1) e.preventDefault(); });
+document.addEventListener('dblclick', function (e) { e.preventDefault(); });
 
 window.addEventListener('load', function () {
   initOverlay();
