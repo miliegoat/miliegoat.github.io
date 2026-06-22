@@ -108,7 +108,14 @@ function detectBgVideos() {
     var vid = document.createElement("video");
     vid.preload = "metadata";
     vid.muted = true;
+    var timeout = setTimeout(function () {
+      vid.removeEventListener("canplay", oncanplay);
+      vid.removeEventListener("error", onerror);
+      misses++;
+      tryNext(n + 1);
+    }, 4000);
     var oncanplay = function () {
+      clearTimeout(timeout);
       vid.removeEventListener("canplay", oncanplay);
       vid.removeEventListener("error", onerror);
       misses = 0;
@@ -121,6 +128,7 @@ function detectBgVideos() {
       tryNext(n + 1);
     };
     var onerror = function () {
+      clearTimeout(timeout);
       vid.removeEventListener("canplay", oncanplay);
       vid.removeEventListener("error", onerror);
       misses++;
