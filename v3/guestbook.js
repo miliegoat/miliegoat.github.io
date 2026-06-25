@@ -1,104 +1,94 @@
-import { WORKER_URL, GB_PAGE, GB_MAX, TURNSTILE_SITE_KEY } from "./constants.js";
-import { formatTimestamp, escapeHtml } from "./utils.js";
-import { authorToken, setAuthorToken } from "./state.js";
+const GB_PAGE = 8;
+const GB_MAX = 500;
+const WORKER_URL = "https://snowy-dust-17c3.asdwaawdawd81.workers.dev/";
+const TURNSTILE_SITE_KEY = "0x4AAAAAADg6LkYattvc_Fqe";
 
 let gbOffset = 0;
 let gbTotal = 0;
 let gbAllEntries = [];
+let turnstileWidgetId = null;
+let authorToken = null;
+let gbKeyBuffer = "";
+let scrollHintShown = false;
 
-let keyBuffer = "";
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.appendChild(document.createTextNode(str));
+  return div.innerHTML;
+}
+
+function formatTimestamp(ts) {
+  if (!ts) return "";
+  const d = new Date(ts);
+  return d.toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
 
 function renderGuestbookEntries(entries) {
   const container = document.getElementById("guestbookEntries");
   if (!container) return;
-
   if (!entries.length) {
-    container.innerHTML =
-      '<div class="guestbook-empty">no entries yet — be the first!</div>';
+    container.innerHTML = '<div class="gb-empty">no entries yet — be the first!</div>';
     updateLoadMore();
     return;
   }
-
   const liked = JSON.parse(localStorage.getItem("gb_liked") || "{}");
-
   container.innerHTML = entries
-    .map(function (entry, i) {
+    .map((entry) => {
       const userLiked = liked[entry.id];
-      const likeIcon = userLiked ? "♥" : "♡";
-      const authorBadge = entry.liked_by_author
-        ? '<span class="author-like-badge">♥ liked by author</span>'
-        : "";
-      const animDelay = (i * 0.06).toFixed(2);
       return (
-        '<div class="guestbook-entry gb-entry" data-id="' +
-        entry.id +
-        '" style="animation-delay:' +
-        animDelay +
-        's">' +
-        '<div class="guestbook-entry-title">' +
+        '<div class="gb-entry">' +
+        '<div class="gb-entry-title">' +
         escapeHtml(entry.name || "anonymous") +
         "</div>" +
-        '<div class="guestbook-entry-body">' +
+        '<div class="gb-entry-body">' +
         escapeHtml(entry.message || "") +
         "</div>" +
-        '<div class="guestbook-entry-footer">' +
-        '<span class="guestbook-entry-meta">' +
+        '<div class="gb-entry-footer">' +
+        '<span class="gb-entry-meta">' +
         formatTimestamp(entry.created_at) +
         "</span>" +
-        '<span class="guestbook-entry-actions">' +
-        '<button class="like-btn ' +
+        '<span class="gb-entry-actions">' +
+        '<button class="gb-like-btn ' +
         (userLiked ? "liked" : "") +
         '" data-id="' +
         entry.id +
         '">' +
-        likeIcon +
+        (userLiked ? "\u2665" : "\u2661") +
         "</button>" +
-        '<span class="like-count">' +
+        '<span class="gb-like-count">' +
         (entry.likes || 0) +
         "</span>" +
-        authorBadge +
+        (entry.liked_by_author
+          ? '<span class="author-like-badge">\u2665 liked by author</span>'
+          : "") +
         "</span></div></div>"
       );
     })
     .join("");
-
   updateLoadMore();
 }
 
-function showScrollHint() {
-  const container = document.getElementById("guestbookEntries");
-  if (!container) return;
-  if (container.scrollHeight <= container.clientHeight) return;
-  if (container.parentElement.querySelector(".guestbook-scroll-hint")) return;
-
-  const hint = document.createElement("div");
-  hint.className = "guestbook-scroll-hint";
-  hint.textContent = "↓ scroll to see new entries";
-  container.appendChild(hint);
-  setTimeout(function () {
-    hint.classList.add("guestbook-scroll-hint--fade");
-    setTimeout(function () {
-      hint.remove();
-    }, 600);
-  }, 2500);
-}
-
 function updateLoadMore() {
-  const container = document.getElementById("guestbookEntries");
+  const footer = document.getElementById("gbFooter");
+  if (!footer) return;
   const hasMore = gbOffset + GB_PAGE < Math.min(gbTotal, GB_MAX);
-
-  let loadMoreBtn = document.getElementById("gbLoadMore");
+  let btn = document.getElementById("gbLoadMore");
   if (hasMore) {
-    if (!loadMoreBtn) {
-      loadMoreBtn = document.createElement("button");
-      loadMoreBtn.id = "gbLoadMore";
-      loadMoreBtn.className = "guestbook-load-more";
-      loadMoreBtn.textContent = "load more";
-      loadMoreBtn.addEventListener("click", loadMoreGuestbookEntries);
-      container.after(loadMoreBtn);
+    if (!btn) {
+      btn = document.createElement("button");
+      btn.id = "gbLoadMore";
+      btn.className = "guestbook-load-more";
+      btn.textContent = "load more";
+      btn.addEventListener("click", loadMoreGuestbookEntries);
+      footer.appendChild(btn);
     }
-  } else if (loadMoreBtn) {
-    loadMoreBtn.remove();
+  } else if (btn) {
+    btn.remove();
   }
 }
 
@@ -107,12 +97,9 @@ async function fetchGuestbookEntries() {
   gbAllEntries = [];
   const status = document.getElementById("guestbookStatus");
   if (status) status.textContent = "loading...";
-
   const container = document.getElementById("guestbookEntries");
   if (container)
-    container.innerHTML =
-      '<div class="guestbook-loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
-
+    container.innerHTML = '<div class="gb-loading"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
   try {
     const res = await fetch(WORKER_URL + "?limit=" + GB_PAGE + "&offset=0");
     if (!res.ok) throw new Error("failed");
@@ -120,98 +107,103 @@ async function fetchGuestbookEntries() {
     gbAllEntries = data.entries || [];
     gbTotal = data.total || 0;
     renderGuestbookEntries(gbAllEntries);
-    const total = Math.min(gbTotal, GB_MAX);
     if (status)
-      status.textContent = total + " message" + (total === 1 ? "" : "s");
+      status.textContent =
+        Math.min(gbTotal, GB_MAX) +
+        " message" +
+        (Math.min(gbTotal, GB_MAX) === 1 ? "" : "s");
   } catch {
     if (status) status.textContent = "could not load";
-    document.getElementById("guestbookEntries").innerHTML =
-      '<div class="guestbook-empty">guestbook is unavailable right now.</div>';
+    if (container)
+      container.innerHTML = '<div class="gb-empty">guestbook is unavailable right now.</div>';
   }
 }
 
 async function loadMoreGuestbookEntries() {
   const newOffset = gbOffset + GB_PAGE;
   if (newOffset >= GB_MAX) return;
-
   const loadMoreBtn = document.getElementById("gbLoadMore");
   if (loadMoreBtn) {
     loadMoreBtn.disabled = true;
     loadMoreBtn.textContent = "loading...";
   }
-
   try {
-    const res = await fetch(
-      WORKER_URL + "?limit=" + GB_PAGE + "&offset=" + newOffset,
-    );
+    const res = await fetch(WORKER_URL + "?limit=" + GB_PAGE + "&offset=" + newOffset);
     if (!res.ok) throw new Error("failed");
     const data = await res.json();
     const more = data.entries || [];
     gbAllEntries = gbAllEntries.concat(more);
     gbOffset = newOffset;
-
     const container = document.getElementById("guestbookEntries");
     const liked = JSON.parse(localStorage.getItem("gb_liked") || "{}");
-    var startIdx = gbAllEntries.length - more.length;
-    var html = more
-      .map(function (entry, i) {
+    const html = more
+      .map((entry) => {
         const userLiked = liked[entry.id];
-        const likeIcon = userLiked ? "♥" : "♡";
-        const authorBadge = entry.liked_by_author
-          ? '<span class="author-like-badge">♥ liked by author</span>'
-          : "";
-        const animDelay = ((startIdx + i) * 0.06).toFixed(2);
         return (
-          '<div class="guestbook-entry gb-entry" data-id="' +
-          entry.id +
-          '" style="animation-delay:' +
-          animDelay +
-          's">' +
-          '<div class="guestbook-entry-title">' +
+          '<div class="gb-entry">' +
+          '<div class="gb-entry-title">' +
           escapeHtml(entry.name || "anonymous") +
           "</div>" +
-          '<div class="guestbook-entry-body">' +
+          '<div class="gb-entry-body">' +
           escapeHtml(entry.message || "") +
           "</div>" +
-          '<div class="guestbook-entry-footer">' +
-          '<span class="guestbook-entry-meta">' +
+          '<div class="gb-entry-footer">' +
+          '<span class="gb-entry-meta">' +
           formatTimestamp(entry.created_at) +
           "</span>" +
-          '<span class="guestbook-entry-actions">' +
-          '<button class="like-btn ' +
+          '<span class="gb-entry-actions">' +
+          '<button class="gb-like-btn ' +
           (userLiked ? "liked" : "") +
           '" data-id="' +
           entry.id +
           '">' +
-          likeIcon +
+          (userLiked ? "\u2665" : "\u2661") +
           "</button>" +
-          '<span class="like-count">' +
+          '<span class="gb-like-count">' +
           (entry.likes || 0) +
           "</span>" +
-          authorBadge +
+          (entry.liked_by_author
+            ? '<span class="author-like-badge">\u2665 liked by author</span>'
+            : "") +
           "</span></div></div>"
         );
       })
       .join("");
     container.insertAdjacentHTML("beforeend", html);
     updateLoadMore();
-    showScrollHint();
-    const loadMoreBtnDone = document.getElementById("gbLoadMore");
-    if (loadMoreBtnDone) {
-      loadMoreBtnDone.disabled = false;
-      loadMoreBtnDone.textContent = "load more";
+    if (!scrollHintShown && container.scrollHeight > container.clientHeight) {
+      scrollHintShown = true;
+      const hint = document.createElement("div");
+      hint.className = "gb-scroll-hint";
+      hint.textContent = "\u2193 scroll to see new entries";
+      const footer = document.getElementById("gbFooter");
+      const existingBtn = document.getElementById("gbLoadMore");
+      if (existingBtn) {
+        footer.insertBefore(hint, existingBtn);
+      } else {
+        footer.appendChild(hint);
+      }
+      setTimeout(() => hint.classList.add("gb-scroll-hint--fade"), 2500);
+      setTimeout(() => hint.remove(), 3100);
+    }
+    const doneBtn = document.getElementById("gbLoadMore");
+    if (doneBtn) {
+      doneBtn.disabled = false;
+      doneBtn.textContent = "load more";
     }
     const status = document.getElementById("guestbookStatus");
-    const total = Math.min(gbTotal, GB_MAX);
     if (status)
-      status.textContent = total + " message" + (total === 1 ? "" : "s");
+      status.textContent =
+        Math.min(gbTotal, GB_MAX) +
+        " message" +
+        (Math.min(gbTotal, GB_MAX) === 1 ? "" : "s");
   } catch {
     const status = document.getElementById("guestbookStatus");
     if (status) status.textContent = "could not load more";
-    const loadMoreBtnErr = document.getElementById("gbLoadMore");
-    if (loadMoreBtnErr) {
-      loadMoreBtnErr.disabled = false;
-      loadMoreBtnErr.textContent = "load more";
+    const errBtn = document.getElementById("gbLoadMore");
+    if (errBtn) {
+      errBtn.disabled = false;
+      errBtn.textContent = "load more";
     }
   }
 }
@@ -219,32 +211,29 @@ async function loadMoreGuestbookEntries() {
 function toggleLike(entryId) {
   const liked = JSON.parse(localStorage.getItem("gb_liked") || "{}");
   const isLiked = liked[entryId];
-  const action = isLiked ? "unlike" : "like";
-
-  const body = { action, id: entryId };
+  const body = { action: isLiked ? "unlike" : "like", id: entryId };
   if (authorToken) body.token = authorToken;
-
   fetch(WORKER_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   })
     .then((res) => {
-      if (!res.ok) throw new Error("request failed");
+      if (!res.ok) throw new Error("failed");
       return res.json();
     })
     .then((result) => {
       if (!result.ok) return;
-      if (action === "like") liked[entryId] = true;
-      else delete liked[entryId];
+      if (isLiked) delete liked[entryId];
+      else liked[entryId] = true;
       localStorage.setItem("gb_liked", JSON.stringify(liked));
-
-      const entry = gbAllEntries.find((e) => String(e.id) === entryId);
-      if (entry) {
-        entry.likes = result.likes;
-        if (result.liked_by_author) entry.liked_by_author = true;
-        else if (authorToken && action === "unlike")
-          entry.liked_by_author = false;
+      for (let i = 0; i < gbAllEntries.length; i++) {
+        if (String(gbAllEntries[i].id) === entryId) {
+          gbAllEntries[i].likes = result.likes;
+          if (result.liked_by_author) gbAllEntries[i].liked_by_author = true;
+          else if (authorToken) gbAllEntries[i].liked_by_author = false;
+          break;
+        }
       }
       renderGuestbookEntries(gbAllEntries);
     })
@@ -253,14 +242,12 @@ function toggleLike(entryId) {
 
 function authenticateAuthor() {
   if (authorToken) {
-    setAuthorToken(null);
+    authorToken = null;
     sessionStorage.removeItem("author_token");
     return;
   }
-
   const password = prompt("enter author password:");
   if (!password) return;
-
   fetch(WORKER_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -269,7 +256,7 @@ function authenticateAuthor() {
     .then((res) => res.json())
     .then((data) => {
       if (data.ok && data.token) {
-        setAuthorToken(data.token);
+        authorToken = data.token;
         sessionStorage.setItem("author_token", data.token);
       } else {
         alert("incorrect password");
@@ -279,47 +266,50 @@ function authenticateAuthor() {
 }
 
 export function initGuestbook() {
-  const form = document.getElementById("guestbookForm");
-  const panel = document.getElementById("guestbookCard");
-
-  fetchGuestbookEntries();
-
+  const overlay = document.getElementById("guestbookOverlay");
+  document.getElementById("guestbookBtn").addEventListener("click", () => {
+    overlay.classList.remove("hidden");
+    if (!overlay.dataset.loaded) {
+      overlay.dataset.loaded = "true";
+      fetchGuestbookEntries();
+      const tw = document.getElementById("turnstileWidget");
+      if (tw && typeof turnstile !== "undefined") {
+        turnstileWidgetId = turnstile.render(tw, {
+          sitekey: TURNSTILE_SITE_KEY,
+          theme: "dark",
+        });
+      }
+    }
+  });
+  document.getElementById("gbClose").addEventListener("click", () => {
+    overlay.classList.add("hidden");
+  });
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) overlay.classList.add("hidden");
+  });
   const entriesContainer = document.getElementById("guestbookEntries");
   if (entriesContainer) {
     entriesContainer.addEventListener("click", (e) => {
-      const btn = e.target.closest(".like-btn");
+      const btn = e.target.closest(".gb-like-btn");
       if (btn) {
         btn.classList.add("like-pop");
-        setTimeout(function () {
-          btn.classList.remove("like-pop");
-        }, 400);
+        setTimeout(() => btn.classList.remove("like-pop"), 400);
         toggleLike(btn.dataset.id);
       }
     });
   }
-
   document.addEventListener("keydown", (e) => {
     if (e.key.length === 1) {
-      keyBuffer += e.key.toLowerCase();
-      if (keyBuffer.length > 9) keyBuffer = keyBuffer.slice(-9);
-      if (keyBuffer === "iamauthor") {
-        keyBuffer = "";
+      gbKeyBuffer += e.key.toLowerCase();
+      if (gbKeyBuffer.length > 9) gbKeyBuffer = gbKeyBuffer.slice(-9);
+      if (gbKeyBuffer === "iamauthor") {
+        gbKeyBuffer = "";
         authenticateAuthor();
       }
     }
   });
-
+  const form = document.getElementById("guestbookForm");
   if (!form) return;
-
-  var turnstileWidgetDiv = document.getElementById("turnstileWidget");
-  var turnstileWidgetId = null;
-  if (turnstileWidgetDiv && typeof turnstile !== "undefined") {
-    turnstileWidgetId = turnstile.render(turnstileWidgetDiv, {
-      sitekey: TURNSTILE_SITE_KEY,
-      theme: "auto",
-    });
-  }
-
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const nameInput = document.getElementById("guestName");
@@ -327,20 +317,20 @@ export function initGuestbook() {
     const name = (nameInput ? nameInput.value : "").trim() || "anonymous";
     const message = (messageInput ? messageInput.value : "").trim();
     const status = document.getElementById("guestbookStatus");
-
     if (!message) {
       if (status) status.textContent = "type a message";
       return;
     }
-
-    var token = turnstileWidgetId ? turnstile.getResponse(turnstileWidgetId) : "";
+    if (message.length > 200) {
+      if (status) status.textContent = "message too long (max 200 characters)";
+      return;
+    }
+    const token = turnstileWidgetId ? turnstile.getResponse(turnstileWidgetId) : "";
     if (!token) {
       if (status) status.textContent = "complete the captcha";
       return;
     }
-
     if (status) status.textContent = "posting...";
-
     try {
       const res = await fetch(WORKER_URL, {
         method: "POST",
@@ -348,13 +338,12 @@ export function initGuestbook() {
         body: JSON.stringify({ name, message, turnstileToken: token }),
       });
       if (!res.ok) {
-        var errMsg = "could not post, try again later.";
+        let errMsg = "could not post, try again later.";
         if (res.status === 403) {
           try {
-            var errBody = await res.json();
-            if (errBody.error === "captcha verification failed") {
+            const errBody = await res.json();
+            if (errBody.error === "captcha verification failed")
               errMsg = "captcha failed — turn off your vpn or try again later";
-            }
           } catch {}
         }
         if (status) status.textContent = errMsg;

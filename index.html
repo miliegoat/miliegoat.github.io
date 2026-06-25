@@ -24,45 +24,50 @@
       <p class="start-text" id="clickLabel">pls click me</p>
     </div>
 
-    <div class="name-group">
-      <p class="name" id="toggleText"><span>mae</span></p>
-      <p class="tagline">
-        hi, i'm <b>mae</b> - i'm
-        <span class="age-display" id="ageDisplay" data-tooltip="--">--</span>
-        years old, living in <b>bratislava</b>. i enjoy making things on the web
-        and listening to music!! i also enjoy minecraft, specifically cheating
-        on minecraft and developing cheats for it. i also enjoy osu!
-      </p>
-    </div>
+    <div class="left-column">
+      <div class="name-group">
+        <p class="name" id="toggleText"><span>mae</span></p>
+        <p class="tagline">
+          hi, i'm <b>mae</b> - i'm
+          <span class="age-display" id="ageDisplay" data-tooltip="--">--</span>
+          years old, living in <b>bratislava</b>. i enjoy making things on the web
+          and listening to music!! i also enjoy minecraft, specifically cheating
+          on minecraft and developing cheats for it. i also enjoy osu!
+        </p>
+      </div>
 
-    <div class="links">
-      <a href="https://discord.com/users/1125787079654260777" target="_blank"
-        >discord</a
-      >
-      <a href="https://github.com/miliegoat" target="_blank">github</a>
-      <a
-        href="https://github.com/miliegoat/discordrpc-spotifylyrics"
-        target="_blank"
-        >spotifylyrics</a
-      >
-      <a href="https://github.com/miliegoat/osu-beatmapdl-cli" target="_blank"
-        >beatmapdl</a
-      >
-      <button id="guestbookBtn">guestbook</button>
+      <div class="links">
+        <a href="https://discord.com/users/1125787079654260777" target="_blank"
+          >discord</a
+        >
+        <a href="https://github.com/miliegoat" target="_blank">github</a>
+        <a
+          href="https://github.com/miliegoat/discordrpc-spotifylyrics"
+          target="_blank"
+          >spotifylyrics</a
+        >
+        <a href="https://github.com/miliegoat/osu-beatmapdl-cli" target="_blank"
+          >beatmapdl</a
+        >
+        <button id="guestbookBtn">guestbook</button>
+      </div>
     </div>
 
     <div class="right-column">
-      <div class="profile">
-        <img
-          class="pfp"
-          id="profilePic"
-          src="https://cdn.discordapp.com/embed/avatars/0.png"
-          alt=""
-        />
-        <span class="un" id="username">loading...</span>
-        <span class="stat" id="status">offline</span>
-        <span class="bio" id="profileText"></span>
-        <span class="credit" id="profileCredit">- mil</span>
+      <div class="profile" id="profile">
+        <div class="profile-main">
+          <img
+            class="pfp"
+            id="profilePic"
+            src="https://cdn.discordapp.com/embed/avatars/0.png"
+            alt=""
+          />
+          <span class="un" id="username">loading...</span>
+          <span class="stat" id="status">offline</span>
+          <span class="bio" id="profileText"></span>
+          <span class="credit" id="profileCredit">- mil</span>
+        </div>
+        <div id="activities"></div>
       </div>
 
       <div class="player" id="player">
@@ -124,14 +129,13 @@
             maxlength="30"
             placeholder="name"
           />
-          <input
+          <textarea
             id="guestMessage"
             class="gb-input gb-msg"
-            type="text"
-            maxlength="280"
+            maxlength="200"
             placeholder="write something"
             required
-          />
+          ></textarea>
           <button type="submit" class="gb-submit">post</button>
           <div id="turnstileWidget" class="gb-turnstile-wrap"></div>
         </form>
@@ -140,6 +144,6 @@
       </div>
     </div>
 
-    <script src="v3.js"></script>
+    <script type="module" src="v3/main.js"></script>
   </body>
 </html>

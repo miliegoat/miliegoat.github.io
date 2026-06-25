@@ -1,7 +1,7 @@
 :root {
   --bg: #0b0b0b;
   --text: #e5e5e5;
-  --muted: #4a4a4a;
+  --muted: #858585bb;
   --dim: rgba(255, 255, 255, 0.04);
   --accent: #10b981;
   --accent-dim: rgba(16, 185, 129, 0.12);
@@ -35,7 +35,7 @@ body {
   overflow: hidden;
   display: grid;
   grid-template-columns: 1fr 345px;
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: auto 1fr;
   column-gap: 3.5vw;
   padding: 2.5vw 3.5vw 3.5vw;
   position: relative;
@@ -47,6 +47,14 @@ body {
 .player {
   position: relative;
   z-index: 2;
+}
+
+.left-column {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .right-column {
@@ -128,10 +136,6 @@ body {
 /* === NAME === */
 
 .name-group {
-  grid-column: 1;
-  grid-row: 1;
-  justify-self: start;
-  align-self: start;
   display: inline-grid;
   grid-template-columns: min-content;
   gap: 8px;
@@ -218,17 +222,20 @@ body {
 /* === PROFILE (top-right) === */
 
 .profile {
-  justify-self: end;
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
   width: 345px;
-  height: 64px;
   background: rgba(11, 11, 11, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: var(--radius);
   padding: 0 18px;
-  overflow: hidden;
+}
+
+.profile-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 64px;
 }
 
 .pfp {
@@ -277,11 +284,6 @@ body {
 /* === LINKS (mid-left) === */
 
 .links {
-  grid-column: 1;
-  grid-row: 2;
-  justify-self: start;
-  align-self: start;
-  margin-top: 8px;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -314,6 +316,127 @@ body {
 .links button:hover {
   color: var(--accent);
   padding-left: 8px;
+}
+
+/* === ACTIVITIES === */
+
+#activities {
+  display: none;
+  padding: 8px 0 12px;
+}
+
+.activity {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.activity + .activity {
+  margin-top: 6px;
+}
+
+.activity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 10px;
+  letter-spacing: 0.02em;
+}
+
+.activity-elapsed {
+  font-size: 0.65rem;
+  font-weight: 400;
+  color: var(--muted);
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+.activity-body {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.activity-art {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.activity-art-placeholder {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.activity-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  justify-content: center;
+  min-height: 44px;
+}
+
+.activity-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.activity-sub {
+  font-size: 0.65rem;
+  font-weight: 400;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+
+.spotify-progress {
+  margin-top: 4px;
+}
+
+.sp-progress-bg {
+  height: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.sp-progress-fill {
+  height: 100%;
+  background: #1db954;
+  border-radius: 1px;
+  transition: width 1s linear;
+}
+
+.sp-times {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.55rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  margin-top: 3px;
 }
 
 /* === PLAYER (bottom-right) === */
@@ -582,6 +705,7 @@ body {
 .gb-body {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 10px 18px;
   min-height: 100px;
 }
@@ -616,6 +740,10 @@ body {
 }
 .gb-msg {
   flex: 2;
+  resize: vertical;
+  min-height: 36px;
+  max-height: 120px;
+  font-family: inherit;
 }
 
 .gb-submit {
@@ -694,6 +822,9 @@ body {
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.6);
   line-height: 1.5;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 .gb-entry-footer {
@@ -842,10 +973,13 @@ body {
   }
 
   .profile {
-    gap: 8px;
     width: 100%;
     max-width: 360px;
-    height: 50px;
+  }
+
+  .profile-main {
+    min-height: 50px;
+    gap: 8px;
   }
 
   .pfp {
@@ -877,8 +1011,6 @@ body {
   .player {
     width: 100%;
     max-width: 360px;
-    justify-self: center;
-    align-self: center;
   }
 
   #visualizerCanvas {
