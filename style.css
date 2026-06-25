@@ -740,10 +740,6 @@ body {
 }
 .gb-msg {
   flex: 2;
-  resize: vertical;
-  min-height: 36px;
-  max-height: 120px;
-  font-family: inherit;
 }
 
 .gb-submit {
