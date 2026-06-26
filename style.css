@@ -42,6 +42,7 @@ body {
 }
 
 .name-group,
+#webring,
 .profile,
 .links,
 .player {
@@ -279,6 +280,71 @@ body {
   opacity: 0.4;
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+/* === WEBRING === */
+
+#webring {
+  display: flex;
+  align-items: center;
+  width: fit-content;
+  background: rgba(11, 11, 11, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 8px 14px;
+  border-radius: var(--radius);
+}
+
+.webring-label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.webring-links {
+  display: flex;
+  gap: 0;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.webring-links a + a::before {
+  content: "|";
+  color: var(--muted);
+  opacity: 0.35;
+  margin: 0 12px;
+  font-weight: 300;
+  font-size: 0.85rem;
+}
+
+.webring-links a {
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: clamp(0.85rem, 1.3vw, 1rem);
+  font-weight: 450;
+  color: var(--muted);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 2px 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.webring-btn {
+  display: block;
+  height: 1em;
+  width: auto;
+  border-radius: 2px;
+  bottom: 3px;
+  image-rendering: pixelated;
+}
+
+.webring-links a:hover {
+  color: var(--accent);
 }
 
 /* === LINKS (mid-left) === */
@@ -1002,6 +1068,27 @@ body {
   .links a:hover,
   .links button:hover {
     padding-left: 0;
+  }
+
+  #webring {
+    width: 100%;
+    max-width: 360px;
+    align-self: center;
+  }
+
+  .webring-links {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .webring-links a {
+    font-size: 0.75rem;
+    gap: 3px;
+  }
+
+  .webring-links a svg {
+    width: 12px;
+    height: 12px;
   }
 
   .player {

@@ -36,6 +36,22 @@
         </p>
       </div>
 
+      <div id="webring">
+        <div class="webring-links">
+          <a href="#" id="webringPrev">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M15 18l-6-6 6-6"/></svg>
+            prev
+          </a>
+          <a href="#" id="webringRandom" target="_blank">
+            <img src="media/nametag.png" alt="random" class="webring-btn" />
+          </a>
+          <a href="#" id="webringNext">
+            next
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M9 6l6 6-6 6"/></svg>
+          </a>
+        </div>
+      </div>
+
       <div class="links">
         <a href="https://discord.com/users/1125787079654260777" target="_blank"
           >discord</a
@@ -146,5 +162,42 @@
     </div>
 
     <script type="module" src="v3/main.js"></script>
+    <script>
+    (function(){
+      var webring = document.getElementById('webring');
+      var leftCol = document.querySelector('.left-column');
+      var rightCol = document.querySelector('.right-column');
+      var links = document.querySelector('.links');
+
+      function repositionWebring() {
+        if (!webring || !leftCol || !rightCol || !links) return;
+        if (window.innerWidth <= 700) {
+          if (webring.parentNode !== rightCol) {
+            rightCol.appendChild(webring);
+          }
+        } else {
+          if (webring.parentNode !== leftCol) {
+            leftCol.insertBefore(webring, links);
+          }
+        }
+      }
+
+      repositionWebring();
+      window.addEventListener('resize', repositionWebring);
+
+      var host = location.hostname.replace(/^www\./, '');
+      fetch('https://lanyard.cafe/api/ring?url=' + encodeURIComponent(host))
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          var prev = document.getElementById('webringPrev');
+          var next = document.getElementById('webringNext');
+          var rnd = document.getElementById('webringRandom');
+          if (prev) prev.href = data.prev.url;
+          if (next) next.href = data.next.url;
+          if (rnd) rnd.href = data.random.url;
+        })
+        .catch(function(){});
+    })();
+    </script>
   </body>
 </html>
