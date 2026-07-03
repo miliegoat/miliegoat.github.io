@@ -505,6 +505,46 @@ body {
   margin-top: 3px;
 }
 
+/* === PLAYLIST SELECTOR === */
+
+.pl-list {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.pl-btn {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 6px;
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: lowercase;
+  padding: 5px 0;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pl-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent-dim);
+}
+
+.pl-btn.active {
+  color: var(--accent);
+  border-color: var(--accent-soft);
+  background: var(--accent-dim);
+}
+
+.player.hidden .pl-list {
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* === PLAYER (bottom-right) === */
 
 .player {

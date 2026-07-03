@@ -5,8 +5,8 @@ import { connectLanyard } from "./discord.js";
 import { playNext } from "./music.js";
 import { initAgeDisplay } from "./age.js";
 import { initEasterEgg } from "./easteregg.js";
-import { initGuestbook } from "./guestbook.js";
 import { getAudioContext } from "./visualizer.js";
+import { initGuestbook } from "./guestbook.js";
 
 function initMainContent() {
   preloadBackgrounds();
@@ -32,12 +32,6 @@ window.addEventListener("pageshow", () => {
   if (ac && ac.state === "suspended") ac.resume();
 });
 
-document.addEventListener("visibilitychange", () => {
-  if (!document.hidden) {
-    const ac = getAudioContext();
-    if (ac && ac.state === "suspended") ac.resume();
-  }
-});
 
 initOverlay(() => {
   initMainContent();

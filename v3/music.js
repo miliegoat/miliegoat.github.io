@@ -1,13 +1,40 @@
 import { initAudioContext } from "./visualizer.js";
 import { updateLyrics, cleanName } from "./lyrics.js";
 
-const musicTracks = [
-  "media/music/lucille - breakdowns.mp3",
-  "media/music/jaydes - vivienne.mp3",
-  "media/music/jacari - imma jerk.mp3",
-  "media/music/bunii - galore galore galore.mp3",
-  "media/music/bunii - REGRET.mp3",
-];
+const playlists = {
+  playlist1: [
+    "media/music/playlist1/lucille - breakdowns.mp3",
+    "media/music/playlist1/jaydes - vivienne.mp3",
+    "media/music/playlist1/jacari - imma jerk.mp3",
+    "media/music/playlist1/bunii - galore galore galore.mp3",
+    "media/music/playlist1/bunii - REGRET.mp3",
+  ],
+  playlist2: [
+    "media/music/playlist2/c u next tuesday kesha sped up.mp3",
+    "media/music/playlist2/NewJeans (뉴진스) Supernatural Official MV (Part.2).mp3",
+    "media/music/playlist2/bailando - paradisio (nightcoresped up).mp3",
+    "media/music/playlist2/so good.mp3",
+    "media/music/playlist2/TWICE FANCY MV.mp3",
+  ],
+  playlist3: [
+    "media/music/playlist3/Lyfelxss - GHOST 幽霊.mp3",
+    "media/music/playlist3/Zape$ - ego trip.mp3",
+    "media/music/playlist3/thorne - clown.mp3",
+    "media/music/playlist3/duskydemise - rhetorical.mp3",
+    "media/music/playlist3/Bruxely! - Bloody Suicide.mp3",
+  ],
+};
+
+const displayNames = {
+  "NewJeans (뉴진스) Supernatural Official MV (Part.2)": "NewJeans - Supernatural",
+  "c u next tuesday kesha sped up": "Kesha - C U Next Tuesday",
+  "bailando - paradisio (nightcoresped up)": "Paradisio - Bailando",
+  "so good": "bunii - so good",
+  "TWICE FANCY MV": "TWICE - FANCY",
+};
+
+let musicTracks = playlists.playlist1;
+let currentPlaylist = "playlist1";
 
 export const player = document.getElementById("musicPlayer");
 let lastTrackIndex = -1;
@@ -36,7 +63,8 @@ function playTrack(track) {
     initAudioContext();
     player.play()
       .then(() => {
-        document.getElementById("nowPlaying").textContent = cleanName(track);
+        const name = cleanName(track);
+        document.getElementById("nowPlaying").textContent = displayNames[name] || name;
       })
       .catch(() => {});
   };
@@ -64,6 +92,22 @@ function playPrev() {
   const idx = (lastTrackIndex - 1 + musicTracks.length) % musicTracks.length;
   lastTrackIndex = idx;
   playTrack(musicTracks[idx]);
+}
+
+export function switchPlaylist(name) {
+  if (name === currentPlaylist) return;
+  currentPlaylist = name;
+  musicTracks = playlists[name];
+  lastTrackIndex = -1;
+  firstPlay = true;
+
+  document.querySelectorAll(".pl-btn").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.playlist === name);
+  });
+
+  player.pause();
+  setPlayIcon(false);
+  playNext();
 }
 
 player.addEventListener("ended", playNext);
@@ -108,4 +152,8 @@ progressBarBg.addEventListener("click", (e) => {
     const rect = progressBarBg.getBoundingClientRect();
     player.currentTime = ((e.clientX - rect.left) / rect.width) * player.duration;
   }
+});
+
+document.querySelectorAll(".pl-btn").forEach((btn) => {
+  btn.addEventListener("click", () => switchPlaylist(btn.dataset.playlist));
 });
