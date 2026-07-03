@@ -17,8 +17,8 @@ const playlists = {
     "media/music/playlist2/TWICE FANCY MV.mp3",
   ],
   playlist3: [
-    "media/music/playlist3/Lyfelxss - GHOST 幽霊.mp3",
     "media/music/playlist3/Zape$ - ego trip.mp3",
+    "media/music/playlist3/Lyfelxss - GHOST 幽霊.mp3",
     "media/music/playlist3/thorne - clown.mp3",
     "media/music/playlist3/duskydemise - rhetorical.mp3",
     "media/music/playlist3/Bruxely! - Bloody Suicide.mp3",
