@@ -132,6 +132,12 @@ body {
   font-size: clamp(0.65rem, 1.2vw, 0.8rem);
   color: var(--muted);
   margin-top: 10px;
+  opacity: 0.4;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+.start-sub:hover {
+  opacity: 0.7;
 }
 
 /* === NAME === */

@@ -2,7 +2,7 @@ import { initOverlay } from "./overlay.js";
 import { preloadBackgrounds, setBackground } from "./background.js";
 import { initSnow, drawSnow } from "./snow.js";
 import { connectLanyard } from "./discord.js";
-import { playNext } from "./music.js";
+import { initPlayer, playNext } from "./music.js";
 import { initAgeDisplay } from "./age.js";
 import { initEasterEgg } from "./easteregg.js";
 import { getAudioContext } from "./visualizer.js";
@@ -33,9 +33,15 @@ window.addEventListener("pageshow", () => {
 });
 
 
-initOverlay(() => {
-  initMainContent();
-  playNext();
-});
+initOverlay(
+  () => {
+    initMainContent();
+    playNext();
+  },
+  () => {
+    initMainContent();
+    initPlayer();
+  }
+);
 initGuestbook();
 initEasterEgg();

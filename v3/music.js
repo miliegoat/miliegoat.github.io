@@ -71,6 +71,16 @@ function playTrack(track) {
   startPlay();
 }
 
+export function initPlayer() {
+  if (musicTracks.length === 0) return;
+  lastTrackIndex = 0;
+  firstPlay = false;
+  player.src = musicTracks[0];
+  player.volume = volumeSlider.value / 500;
+  const name = cleanName(musicTracks[0]);
+  document.getElementById("nowPlaying").textContent = displayNames[name] || name;
+}
+
 export function playNext() {
   if (musicTracks.length === 0) {
     document.getElementById("nowPlaying").textContent = "no tracks loaded";
