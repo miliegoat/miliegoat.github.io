@@ -12,3 +12,4 @@ export function initAgeDisplay() {
   update();
   setInterval(update, 100);
 }
+//hi lol
