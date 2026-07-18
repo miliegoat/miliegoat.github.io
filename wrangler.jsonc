@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "miliegoat",
-  "compatibility_date": "2026-07-07",
+  "compatibility_date": "2026-07-03",
   "observability": {
     "enabled": true
   },
