@@ -1,12 +1,14 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "miliegoat",
-  "compatibility_date": "2026-07-07",
+  "compatibility_date": "2026-07-18",
   "observability": {
-    "enabled": true,
+    "enabled": true
   },
   "assets": {
-    "directory": ".",
+    "directory": "."
   },
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
 }
